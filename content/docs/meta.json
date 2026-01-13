@@ -1,0 +1,18 @@
+{
+  "title": "CrowdComputed API",
+  "description": "CrowdComputed API Documentation",
+  "icon": "Building",
+  "root": true,
+  "pages": [
+    "---Developer Docs---",
+    "index",
+    "quick-start",
+    "self-host",
+    "features",
+    "resources",
+    "integrations",
+    "guides",
+    "---References---",
+    "...(api)"
+  ]
+}
