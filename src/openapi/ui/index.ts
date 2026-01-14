@@ -1,1 +1,1 @@
-export * from '@/ui/api-page';
+export * from "@/openapi/ui/api-page";

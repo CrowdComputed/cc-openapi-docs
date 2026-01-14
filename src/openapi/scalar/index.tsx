@@ -1,6 +1,6 @@
 import { lazy } from "react";
 import type { MethodInformation, RenderContext } from "@/openapi/types";
-import type { CreateAPIPageOptions } from "@/openapi/ui";
+import type { CreateAPIPageOptions } from "@/openapi/ui/api-page";
 
 const Client = lazy(() => import("./client"));
 

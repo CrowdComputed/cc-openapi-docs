@@ -199,7 +199,9 @@ export function fromSchema(
       };
     },
     fromTagName(name) {
-      const tag = dereferenced.tags?.find((item) => item.name === name);
+      const tag = dereferenced.tags?.find(
+        (item: TagObject) => item.name === name,
+      );
       if (!tag) return;
 
       return {

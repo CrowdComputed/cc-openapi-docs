@@ -187,30 +187,32 @@ export async function Operation({
   });
 
   const securities = (method.security ?? dereferenced.security ?? []).filter(
-    (v) => Object.keys(v).length > 0,
+    (v: Record<string, string[]>) => Object.keys(v).length > 0,
   );
 
   if (type === "operation" && securities.length > 0) {
     const securitySchemes = dereferenced.components?.securitySchemes;
-    const items = securities.map((security, i) => {
-      return {
-        value: String(i),
-        label: (
-          <div className="flex flex-col text-xs min-w-0">
-            {Object.entries(security).map(([key, scopes]) => (
-              <code key={key} className="truncate">
-                <span className="font-medium">{key}</span>{" "}
-                {scopes.length > 0 && (
-                  <span className="text-fd-muted-foreground">
-                    {scopes.join(", ")}
-                  </span>
-                )}
-              </code>
-            ))}
-          </div>
-        ),
-      };
-    });
+    const items = securities.map(
+      (security: Record<string, string[]>, i: number) => {
+        return {
+          value: String(i),
+          label: (
+            <div className="flex flex-col text-xs min-w-0">
+              {Object.entries(security).map(([key, scopes]) => (
+                <code key={key} className="truncate">
+                  <span className="font-medium">{key}</span>{" "}
+                  {Array.isArray(scopes) && scopes.length > 0 && (
+                    <span className="text-fd-muted-foreground">
+                      {scopes.join(", ")}
+                    </span>
+                  )}
+                </code>
+              ))}
+            </div>
+          ),
+        };
+      },
+    );
 
     authNode = (
       <SelectTabs defaultValue={items[0].value}>
@@ -224,17 +226,17 @@ export async function Operation({
             <div className="not-prose">{items[0].label}</div>
           )}
         </div>
-        {securities.map((security, i) => (
-          <SelectTab key={i} value={items[i].value}>
+        {securities.map((security: Record<string, string[]>, i: number) => (
+          <SelectTab key={i} value={items[i]?.value}>
             {Object.entries(security).map(([key, scopes]) => {
               const scheme = securitySchemes?.[key];
-              if (!scheme) return;
+              if (!scheme) return null;
 
               return (
                 <AuthScheme
                   key={key}
                   scheme={scheme}
-                  scopes={scopes}
+                  scopes={Array.isArray(scopes) ? scopes : []}
                   ctx={ctx}
                 />
               );

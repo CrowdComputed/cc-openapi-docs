@@ -1,11 +1,11 @@
-import { type ParsedSchema } from '@/utils/schema';
-import { deepEqual } from './deep-equal';
+import type { ParsedSchema } from "@/openapi/utils/schema";
+import { deepEqual } from "./deep-equal";
 
 /**
  * Merge `allOf` object schema
  */
 export function mergeAllOf(schema: ParsedSchema): ParsedSchema {
-  if (typeof schema === 'boolean' || !schema.allOf) return schema;
+  if (typeof schema === "boolean" || !schema.allOf) return schema;
 
   const { allOf, ...rest } = schema;
   let result: ParsedSchema = rest;
@@ -18,26 +18,26 @@ export function mergeAllOf(schema: ParsedSchema): ParsedSchema {
 export function intersection(a: ParsedSchema, b: ParsedSchema): ParsedSchema {
   a = mergeAllOf(a);
   b = mergeAllOf(b);
-  if (typeof a === 'boolean' && typeof b === 'boolean') return a && b;
-  if (typeof a === 'boolean') return a;
-  if (typeof b === 'boolean') return b;
+  if (typeof a === "boolean" && typeof b === "boolean") return a && b;
+  if (typeof a === "boolean") return a;
+  if (typeof b === "boolean") return b;
 
   const result: ParsedSchema = { ...a };
   for (const _k in b) {
     const key = _k as keyof typeof b;
 
     switch (key) {
-      case '$id':
-      case '$comment':
-      case 'description':
-      case 'additionalItems':
-      case 'examples':
-      case 'allOf':
-      case 'writeOnly':
-      case 'readOnly':
+      case "$id":
+      case "$comment":
+      case "description":
+      case "additionalItems":
+      case "examples":
+      case "allOf":
+      case "writeOnly":
+      case "readOnly":
         // ignored
         break;
-      case 'title': {
+      case "title": {
         const value = b[key];
         if (value === undefined) break;
         if (result[key]) {
@@ -47,42 +47,47 @@ export function intersection(a: ParsedSchema, b: ParsedSchema): ParsedSchema {
         }
         break;
       }
-      case 'minItems':
-      case 'minimum':
-      case 'exclusiveMinimum':
-      case 'minProperties':
-      case 'minContains':
-      case 'minLength': {
+      case "minItems":
+      case "minimum":
+      case "exclusiveMinimum":
+      case "minProperties":
+      case "minContains":
+      case "minLength": {
         const value = b[key];
         if (value === undefined) break;
-        result[key] = result[key] === undefined ? value : Math.max(result[key], value);
+        result[key] =
+          result[key] === undefined ? value : Math.max(result[key], value);
         break;
       }
-      case 'maxContains':
-      case 'maxItems':
-      case 'maxLength':
-      case 'maxProperties':
-      case 'maximum':
-      case 'exclusiveMaximum': {
+      case "maxContains":
+      case "maxItems":
+      case "maxLength":
+      case "maxProperties":
+      case "maximum":
+      case "exclusiveMaximum": {
         const value = b[key];
         if (value === undefined) break;
-        result[key] = result[key] === undefined ? value : Math.min(result[key], value);
+        result[key] =
+          result[key] === undefined ? value : Math.min(result[key], value);
         break;
       }
       // intersection
-      case 'enum':
-      case 'anyOf':
-      case 'oneOf': {
+      case "enum":
+      case "anyOf":
+      case "oneOf": {
         const value = b[key];
         if (value === undefined) break;
 
-        result[key] = result[key] === undefined ? value : intersectArray(result[key], value);
+        result[key] =
+          result[key] === undefined
+            ? value
+            : intersectArray(result[key], value);
         break;
       }
       // require same
-      case 'format':
-      case 'const':
-      case 'type': {
+      case "format":
+      case "const":
+      case "type": {
         const value = b[key];
         if (value === undefined) break;
         result[key] ??= value;
@@ -91,14 +96,14 @@ export function intersection(a: ParsedSchema, b: ParsedSchema): ParsedSchema {
         break;
       }
       // add
-      case 'required': {
+      case "required": {
         const value = b[key];
         if (value === undefined) break;
         result[key] = [...(result[key] ?? []), ...value];
         break;
       }
-      case 'properties':
-      case 'patternProperties': {
+      case "properties":
+      case "patternProperties": {
         const value = b[key];
         if (value === undefined) break;
 
@@ -127,16 +132,17 @@ export function intersection(a: ParsedSchema, b: ParsedSchema): ParsedSchema {
         result[key] = out;
         break;
       }
-      case 'additionalProperties':
-      case 'contains':
-      case 'items': {
+      case "additionalProperties":
+      case "contains":
+      case "items": {
         const value = b[key];
         if (value === undefined) break;
 
-        result[key] = result[key] === undefined ? value : intersection(result[key], value);
+        result[key] =
+          result[key] === undefined ? value : intersection(result[key], value);
         break;
       }
-      case 'not': {
+      case "not": {
         const value = b[key];
         if (value === undefined) break;
 

@@ -1,9 +1,9 @@
-import type { Document } from '@/types';
-import type { NoReference } from '@/utils/schema';
-import type { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
-import { dereference, upgrade } from '@scalar/openapi-parser';
-import { bundle } from '@scalar/json-magic/bundle';
-import { fetchUrls, readFiles } from '@scalar/json-magic/bundle/plugins/node';
+import { bundle } from "@scalar/json-magic/bundle";
+import { fetchUrls, readFiles } from "@scalar/json-magic/bundle/plugins/node";
+import { dereference, upgrade } from "@scalar/openapi-parser";
+import type { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
+import type { Document } from "@/openapi/types";
+import type { NoReference } from "@/openapi/utils/schema";
 
 export type ProcessedDocument = {
   /**
@@ -26,7 +26,7 @@ const cache = new Map<string, ProcessedDocument>();
 export async function processDocumentCached(
   input: string | OpenAPIV3_1.Document | OpenAPIV3.Document,
 ): Promise<ProcessedDocument> {
-  if (typeof input !== 'string') return processDocument(input);
+  if (typeof input !== "string") return processDocument(input);
 
   const cached = cache.get(input);
   if (cached) return cached;

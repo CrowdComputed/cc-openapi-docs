@@ -1,12 +1,12 @@
-import type { OpenAPIV3_1 as V3_1 } from 'openapi-types';
-import type { default as Slugger } from 'github-slugger';
-import type { NoReference } from '@/utils/schema';
-import type { ProcessedDocument } from '@/utils/process-document';
-import type { MediaAdapter } from '@/requests/media/adapter';
-import type { OpenAPIOptions } from '@/server';
-import type { CreateAPIPageOptions } from './ui/api-page';
-import type { CodeUsageGenerator } from './ui/operation/usage-tabs';
-import type { HTMLAttributes, ReactNode } from 'react';
+import type { default as Slugger } from "github-slugger";
+import type { OpenAPIV3_1 as V3_1 } from "openapi-types";
+import type { HTMLAttributes, ReactNode } from "react";
+import type { MediaAdapter } from "@/openapi/requests/media/adapter";
+import type { OpenAPIOptions } from "@/openapi/server";
+import type { ProcessedDocument } from "@/openapi/utils/process-document";
+import type { NoReference } from "@/openapi/utils/schema";
+import type { CreateAPIPageOptions } from "./ui/api-page";
+import type { CodeUsageGenerator } from "./ui/operation/usage-tabs";
 
 export type Document = V3_1.Document;
 export type OperationObject = V3_1.OperationObject;
@@ -22,12 +22,14 @@ export type ResponseObject = V3_1.ResponseObject;
 
 export type MethodInformation = NoReference<OperationObject> & {
   method: string;
-  'x-codeSamples'?: Omit<CodeUsageGenerator, 'id'>[];
-  'x-selectedCodeSample'?: string;
-  'x-exclusiveCodeSample'?: string;
+  "x-codeSamples"?: Omit<CodeUsageGenerator, "id">[];
+  "x-selectedCodeSample"?: string;
+  "x-exclusiveCodeSample"?: string;
 };
 
-export interface RenderContext extends Pick<OpenAPIOptions, 'proxyUrl'>, CreateAPIPageOptions {
+export interface RenderContext
+  extends Pick<OpenAPIOptions, "proxyUrl">,
+    CreateAPIPageOptions {
   servers: NoReference<ServerObject>[];
   slugger: Slugger;
 

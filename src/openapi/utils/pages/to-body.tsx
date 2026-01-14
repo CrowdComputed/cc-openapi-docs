@@ -1,13 +1,13 @@
-import type { ApiPageProps } from '@/ui/api-page';
-import type { OutputEntry } from '@/utils/pages/builder';
+import type { ApiPageProps } from "@/openapi/ui/api-page";
+import type { OutputEntry } from "@/openapi/utils/pages/builder";
 
 export function toBody(entry: OutputEntry): ApiPageProps {
-  if (entry.type === 'operation')
+  if (entry.type === "operation")
     return {
       document: entry.schemaId,
       operations: [entry.item],
     };
-  if (entry.type === 'webhook')
+  if (entry.type === "webhook")
     return {
       document: entry.schemaId,
       webhooks: [entry.item],

@@ -1,11 +1,11 @@
-import type { SchemaObject } from 'ajv';
-import type { RenderContext } from '@/types';
+import type { SchemaObject } from "ajv";
+import type { RenderContext } from "@/openapi/types";
 
 export async function getTypescriptSchema(
   schema: SchemaObject,
   ctx: RenderContext,
 ): Promise<string | undefined> {
-  const { compile } = await import('@fumari/json-schema-to-typescript');
+  const { compile } = await import("@fumari/json-schema-to-typescript");
 
   try {
     const input = structuredClone({
@@ -19,11 +19,11 @@ export async function getTypescriptSchema(
       schemaToId.set(v, k);
     }
 
-    return await compile(input.schema, 'Response', {
+    return await compile(input.schema, "Response", {
       enableConstEnums: false,
       schemaToId,
     });
   } catch (e) {
-    console.warn('Failed to generate typescript schema:', e);
+    console.warn("Failed to generate typescript schema:", e);
   }
 }

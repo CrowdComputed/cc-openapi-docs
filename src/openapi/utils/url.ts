@@ -1,14 +1,14 @@
-import type { RequestData } from '@/requests/types';
+import type { RequestData } from "@/openapi/requests/types";
 
 export function isUrl(schemaId: string): boolean {
-  return schemaId.startsWith('https://') || schemaId.startsWith('http://');
+  return schemaId.startsWith("https://") || schemaId.startsWith("http://");
 }
 
 export function joinURL(base: string, pathname: string): string {
-  if (pathname.startsWith('/')) pathname = pathname.slice(1);
-  if (base.endsWith('/')) base = base.slice(0, -1);
+  if (pathname.startsWith("/")) pathname = pathname.slice(1);
+  if (base.endsWith("/")) base = base.slice(0, -1);
 
-  if (pathname.length > 0) return base + '/' + pathname;
+  if (pathname.length > 0) return base + "/" + pathname;
   else return base;
 }
 
@@ -17,14 +17,17 @@ export function joinURL(base: string, pathname: string): string {
  * @param base - the base URL (must be absolute)
  */
 export function withBase(url: string, base: string): string {
-  if (!url.startsWith('https://') && !url.startsWith('http://')) {
+  if (!url.startsWith("https://") && !url.startsWith("http://")) {
     return joinURL(base, url);
   }
 
   return url;
 }
 
-export function resolveServerUrl(template: string, variables: Record<string, string>): string {
+export function resolveServerUrl(
+  template: string,
+  variables: Record<string, string>,
+): string {
   for (const [key, value] of Object.entries(variables)) {
     template = template.replaceAll(`{${key}}`, value);
   }
@@ -32,7 +35,10 @@ export function resolveServerUrl(template: string, variables: Record<string, str
   return template;
 }
 
-export function resolveRequestData(pathname: string, { path, query }: RequestData): string {
+export function resolveRequestData(
+  pathname: string,
+  { path, query }: RequestData,
+): string {
   // First, resolve path parameters in the pathname
   for (const key in path) {
     const param = path[key];
@@ -41,10 +47,10 @@ export function resolveRequestData(pathname: string, { path, query }: RequestDat
   }
 
   // Check if pathname already contains query parameters (legacy API support)
-  const [pathPart, existingQueryString] = pathname.split('?', 2);
+  const [pathPart, existingQueryString] = pathname.split("?", 2);
 
   // Parse existing query parameters from the pathname if they exist
-  const searchParams = new URLSearchParams(existingQueryString || '');
+  const searchParams = new URLSearchParams(existingQueryString || "");
 
   // Add new query parameters from the RequestData
   for (const key in query) {

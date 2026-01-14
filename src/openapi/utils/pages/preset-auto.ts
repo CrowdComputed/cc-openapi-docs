@@ -183,7 +183,7 @@ export function createAutoPreset(
         tags = ["unknown"];
       }
 
-      return tags.map((tag) => path.join(slugify(tag), `${file}.mdx`));
+      return tags.map((tag: string) => path.join(slugify(tag), `${file}.mdx`));
     }
 
     if (typeof groupBy === "function") {

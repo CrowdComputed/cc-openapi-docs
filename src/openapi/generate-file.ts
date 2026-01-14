@@ -1,11 +1,18 @@
-import { mkdir, writeFile } from 'node:fs/promises';
-import * as path from 'node:path';
-import { generateDocument, type PagesToTextOptions, toText } from './utils/pages/to-text';
-import type { ProcessedDocument } from '@/utils/process-document';
-import type { OpenAPIServer } from '@/server';
-import { createGetUrl, getSlugs } from 'fumadocs-core/source';
-import { createAutoPreset, type SchemaToPagesOptions } from '@/utils/pages/preset-auto';
-import { fromSchema, type OutputEntry } from '@/utils/pages/builder';
+import { mkdir, writeFile } from "node:fs/promises";
+import * as path from "node:path";
+import { createGetUrl, getSlugs } from "fumadocs-core/source";
+import type { OpenAPIServer } from "@/openapi/server";
+import { fromSchema, type OutputEntry } from "@/openapi/utils/pages/builder";
+import {
+  createAutoPreset,
+  type SchemaToPagesOptions,
+} from "@/openapi/utils/pages/preset-auto";
+import type { ProcessedDocument } from "@/openapi/utils/process-document";
+import {
+  generateDocument,
+  type PagesToTextOptions,
+  toText,
+} from "./utils/pages/to-text";
 
 export interface OutputFile {
   path: string;
@@ -61,7 +68,10 @@ interface GenerateFilesConfig extends PagesToTextOptions {
   /**
    * Can add/change/remove output files before writing to file system
    **/
-  beforeWrite?: (this: BeforeWriteContext, files: OutputFile[]) => void | Promise<void>;
+  beforeWrite?: (
+    this: BeforeWriteContext,
+    files: OutputFile[],
+  ) => void | Promise<void>;
 }
 
 export type Config = SchemaToPagesOptions & GenerateFilesConfig;
@@ -88,7 +98,7 @@ export async function generateFiles(options: Config): Promise<void> {
 }
 
 export async function generateFilesOnly(
-  options: SchemaToPagesOptions & Omit<GenerateFilesConfig, 'output'>,
+  options: SchemaToPagesOptions & Omit<GenerateFilesConfig, "output">,
 ): Promise<OutputFile[]> {
   const schemas = await options.input.getSchemas();
 
@@ -98,18 +108,18 @@ export async function generateFilesOnly(
 
   const entries = Object.entries(schemas);
   if (entries.length === 0) {
-    throw new Error('No input files found.');
+    throw new Error("No input files found.");
   }
   const preset = createAutoPreset(options);
   for (const [id, schema] of entries) {
     const entries = fromSchema(id, schema, preset);
-    const schemaFiles = (generated[id] ??= []);
+    const schemaFiles = generated[id] ?? [];
 
     generatedEntries[id] = entries;
     for (const entry of entries) {
       const file: OutputFile = {
         path: entry.path,
-        content: toText(entry, schema, options),
+        content: toText(entry, schema, options) ?? "",
       };
 
       schemaFiles.push(file);
@@ -134,13 +144,13 @@ export async function generateFilesOnly(
 function writeIndexFiles(
   files: OutputFile[],
   context: BeforeWriteContext,
-  options: SchemaToPagesOptions & Omit<GenerateFilesConfig, 'output'>,
+  options: SchemaToPagesOptions & Omit<GenerateFilesConfig, "output">,
 ) {
   const { generatedEntries } = context;
   const { items, url } = options.index!;
 
   let urlFn: (path: string) => string;
-  if (typeof url === 'object') {
+  if (typeof url === "object") {
     const getUrl = createGetUrl(url.baseUrl);
 
     urlFn = (file) => getUrl(getSlugs(path.relative(url.contentDir, file)));
@@ -158,7 +168,7 @@ function writeIndexFiles(
 
   function fileContent(index: IndexItem): string {
     const content: string[] = [];
-    content.push('<Cards>');
+    content.push("<Cards>");
     const pathToEntry = new Map<string, OutputEntry>();
     const only = index.only ?? Object.keys(context.generated);
 
@@ -171,7 +181,7 @@ function writeIndexFiles(
         const match = findEntryByPath(item);
         if (!match) {
           throw new Error(
-            `${item} does not exist on "input", available: ${Object.keys(generatedEntries).join(', ')}.`,
+            `${item} does not exist on "input", available: ${Object.keys(generatedEntries).join(", ")}.`,
           );
         }
 
@@ -182,26 +192,27 @@ function writeIndexFiles(
     for (const file of pathToEntry.values()) {
       const descriptionAttr = file.info.description
         ? `description=${JSON.stringify(file.info.description)} `
-        : '';
+        : "";
       content.push(
         `<Card href="${urlFn(file.path)}" title=${JSON.stringify(file.info.title)} ${descriptionAttr}/>`,
       );
     }
 
-    content.push('</Cards>');
+    content.push("</Cards>");
     return generateDocument(
       {
-        title: index.title ?? 'Overview',
+        title: index.title ?? "Overview",
         description: index.description,
       },
-      content.join('\n'),
+      content.join("\n"),
       options,
     );
   }
 
-  for (const item of typeof items === 'function' ? items(context) : items) {
+  for (const item of typeof items === "function" ? items(context) : items) {
     files.push({
-      path: path.extname(item.path).length === 0 ? `${item.path}.mdx` : item.path,
+      path:
+        path.extname(item.path).length === 0 ? `${item.path}.mdx` : item.path,
       content: fileContent(item),
     });
   }
