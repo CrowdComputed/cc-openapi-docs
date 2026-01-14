@@ -260,17 +260,17 @@ export default function PlaygroundClient({
     // 在 SSR 阶段，直接使用示例数据
     // localStorage 只在客户端可用
     if (typeof window === "undefined") {
-      const requestData = examples.find(
-        (example) => example.id === exampleId,
-      )?.data;
+    const requestData = examples.find(
+      (example) => example.id === exampleId,
+    )?.data;
 
-      return {
-        path: requestData?.path ?? {},
-        query: requestData?.query ?? {},
-        header: requestData?.header ?? {},
-        body: requestData?.body ?? {},
-        cookie: requestData?.cookie ?? {},
-      };
+    return {
+      path: requestData?.path ?? {},
+      query: requestData?.query ?? {},
+      header: requestData?.header ?? {},
+      body: requestData?.body ?? {},
+      cookie: requestData?.cookie ?? {},
+    };
     }
 
     // 客户端：从 localStorage 恢复表单数据
@@ -418,15 +418,15 @@ export default function PlaygroundClient({
     // 只在客户端环境中保存到 localStorage
     if (typeof window !== "undefined") {
       // 保存认证字段
-      for (const item of inputs) {
-        const value = get(values, item.fieldName);
+    for (const item of inputs) {
+      const value = get(values, item.fieldName);
 
-        if (value) {
+      if (value) {
           try {
-            localStorage.setItem(
-              storageKeys.AuthField(item),
-              JSON.stringify(value),
-            );
+        localStorage.setItem(
+          storageKeys.AuthField(item),
+          JSON.stringify(value),
+        );
           } catch {
             // 忽略 localStorage 写入错误（如存储空间已满）
           }
