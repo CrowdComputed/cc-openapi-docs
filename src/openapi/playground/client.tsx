@@ -200,50 +200,42 @@ export default function PlaygroundClient({
     | "query"
     | "path"
     | "body";
-  const [panelStates, setPanelStates] = useState<Record<PanelId, boolean>>(
-    () => {
-      // 初始化时从 localStorage 恢复面板状态
-      if (typeof window === "undefined") {
-        return {
-          authorization: false,
-          header: false,
-          cookie: false,
-          query: false,
-          path: false,
-          body: false,
-        };
-      }
+  // 服务器端和客户端使用相同的默认值，避免 hydration 错误
+  const [panelStates, setPanelStates] = useState<Record<PanelId, boolean>>({
+    authorization: false,
+    header: false,
+    cookie: false,
+    query: false,
+    path: false,
+    body: false,
+  });
 
-      try {
-        const panelStateKey = storageKeys.PanelState(route, method);
-        const stored = localStorage.getItem(panelStateKey);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (parsed && typeof parsed === "object") {
-            return {
-              authorization: parsed.authorization ?? false,
-              header: parsed.header ?? false,
-              cookie: parsed.cookie ?? false,
-              query: parsed.query ?? false,
-              path: parsed.path ?? false,
-              body: parsed.body ?? false,
-            };
-          }
+  // 在客户端挂载后从 localStorage 恢复面板状态
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      const panelStateKey = storageKeys.PanelState(route, method);
+      const stored = localStorage.getItem(panelStateKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === "object") {
+          setPanelStates({
+            authorization: parsed.authorization ?? false,
+            header: parsed.header ?? false,
+            cookie: parsed.cookie ?? false,
+            query: parsed.query ?? false,
+            path: parsed.path ?? false,
+            body: parsed.body ?? false,
+          });
         }
-      } catch {
-        // 如果解析失败，使用默认值
       }
-
-      return {
-        authorization: false,
-        header: false,
-        cookie: false,
-        query: false,
-        path: false,
-        body: false,
-      };
-    },
-  );
+    } catch {
+      // 如果解析失败，保持默认值
+    }
+  }, [route, method, storageKeys]);
 
   // 更新面板状态并保存到 localStorage
   const updatePanelState = useEffectEvent((panelId: PanelId, open: boolean) => {
@@ -347,35 +339,6 @@ export default function PlaygroundClient({
     defaultValues,
   });
 
-  // 从 localStorage 恢复响应数据
-  const initialResponse = useMemo<FetchResult | undefined>(() => {
-    if (typeof window === "undefined") {
-      return undefined;
-    }
-
-    try {
-      const responseKey = storageKeys.Response(route, method);
-      const stored = localStorage.getItem(responseKey);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        // 验证数据结构是否正确
-        if (
-          parsed &&
-          typeof parsed === "object" &&
-          "status" in parsed &&
-          "type" in parsed &&
-          "data" in parsed
-        ) {
-          return parsed as FetchResult;
-        }
-      }
-    } catch {
-      // 如果解析失败，返回 undefined
-    }
-
-    return undefined;
-  }, [route, method, storageKeys]);
-
   const testQuery = useQuery(async (input: FormValues) => {
     const targetServer = serverRef.current;
     const fetcher = await import("./fetcher").then((mod) =>
@@ -403,7 +366,39 @@ export default function PlaygroundClient({
         ...input._encoded,
       },
     );
-  }, initialResponse);
+  });
+
+  // 在客户端挂载后从 localStorage 恢复响应数据
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    // 只在没有现有数据时恢复
+    if (testQuery.data) {
+      return;
+    }
+
+    try {
+      const responseKey = storageKeys.Response(route, method);
+      const stored = localStorage.getItem(responseKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // 验证数据结构是否正确
+        if (
+          parsed &&
+          typeof parsed === "object" &&
+          "status" in parsed &&
+          "type" in parsed &&
+          "data" in parsed
+        ) {
+          testQuery.setData(parsed as FetchResult);
+        }
+      }
+    } catch {
+      // 如果解析失败，忽略
+    }
+  }, [route, method, storageKeys, testQuery.data, testQuery.setData]);
 
   // 当响应数据更新时保存到 localStorage
   useEffect(() => {
