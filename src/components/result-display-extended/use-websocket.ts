@@ -380,11 +380,6 @@ export function useWebSocket({
               countRef.current.textContent = `日志 (${messagesArrayRef.current.length})`;
             }
           }
-
-          // WebSocket 错误后，调用一次 HTTP 接口获取任务状态
-          if (taskIdRef.current && enabled) {
-            queryTaskStatus();
-          }
         };
 
         ws.onclose = (event) => {
