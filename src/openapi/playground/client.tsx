@@ -188,10 +188,115 @@ export default function PlaygroundClient({
     transformAuthInputs,
   );
 
+  // 面板展开状态管理
+  type PanelId =
+    | "authorization"
+    | "header"
+    | "cookie"
+    | "query"
+    | "path"
+    | "body";
+  const [panelStates, setPanelStates] = useState<Record<PanelId, boolean>>(
+    () => {
+      // 初始化时从 localStorage 恢复面板状态
+      if (typeof window === "undefined") {
+        return {
+          authorization: false,
+          header: false,
+          cookie: false,
+          query: false,
+          path: false,
+          body: false,
+        };
+      }
+
+      try {
+        const panelStateKey = storageKeys.PanelState(route, method);
+        const stored = localStorage.getItem(panelStateKey);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && typeof parsed === "object") {
+            return {
+              authorization: parsed.authorization ?? false,
+              header: parsed.header ?? false,
+              cookie: parsed.cookie ?? false,
+              query: parsed.query ?? false,
+              path: parsed.path ?? false,
+              body: parsed.body ?? false,
+            };
+          }
+        }
+      } catch {
+        // 如果解析失败，使用默认值
+      }
+
+      return {
+        authorization: false,
+        header: false,
+        cookie: false,
+        query: false,
+        path: false,
+        body: false,
+      };
+    },
+  );
+
+  // 更新面板状态并保存到 localStorage
+  const updatePanelState = useEffectEvent((panelId: PanelId, open: boolean) => {
+    setPanelStates((prev) => {
+      const newStates = { ...prev, [panelId]: open };
+
+      // 保存到 localStorage
+      if (typeof window !== "undefined") {
+        try {
+          const panelStateKey = storageKeys.PanelState(route, method);
+          localStorage.setItem(panelStateKey, JSON.stringify(newStates));
+        } catch {
+          // 忽略存储错误
+        }
+      }
+
+      return newStates;
+    });
+  });
+
   const defaultValues: FormValues = useMemo(() => {
-    // 首先尝试从 localStorage 恢复表单数据
+    // 在 SSR 阶段，直接使用示例数据
+    // localStorage 只在客户端可用
+    if (typeof window === "undefined") {
+      const requestData = examples.find(
+        (example) => example.id === exampleId,
+      )?.data;
+
+      return {
+        path: requestData?.path ?? {},
+        query: requestData?.query ?? {},
+        header: requestData?.header ?? {},
+        body: requestData?.body ?? {},
+        cookie: requestData?.cookie ?? {},
+      };
+    }
+
+    // 客户端：从 localStorage 恢复表单数据
+    // 1. 先从公共存储恢复 header
+    let restoredHeader: Record<string, unknown> = {};
+    try {
+      const commonHeadersKey = storageKeys.CommonHeaders();
+      const storedHeaders = localStorage.getItem(commonHeadersKey);
+      if (storedHeaders) {
+        const parsed = JSON.parse(storedHeaders);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          restoredHeader = parsed;
+        }
+      }
+    } catch {
+      // 如果解析失败，继续使用示例数据
+    }
+
+    // 2. 从接口特定存储恢复其他字段（path, query, body, cookie）
     const apiStorageKey = storageKeys.ApiForm(route, method);
     const storedData = localStorage.getItem(apiStorageKey);
+    let restoredData: Partial<FormValues> = {};
 
     if (storedData) {
       try {
@@ -202,14 +307,12 @@ export default function PlaygroundClient({
           typeof parsed === "object" &&
           ("path" in parsed ||
             "query" in parsed ||
-            "header" in parsed ||
             "body" in parsed ||
             "cookie" in parsed)
         ) {
-          return {
+          restoredData = {
             path: parsed.path ?? {},
             query: parsed.query ?? {},
-            header: parsed.header ?? {},
             body: parsed.body ?? {},
             cookie: parsed.cookie ?? {},
           };
@@ -219,17 +322,20 @@ export default function PlaygroundClient({
       }
     }
 
-    // 如果没有存储的数据，使用示例数据
+    // 3. 合并恢复的数据和示例数据
     const requestData = examples.find(
       (example) => example.id === exampleId,
     )?.data;
 
     return {
-      path: requestData?.path ?? {},
-      query: requestData?.query ?? {},
-      header: requestData?.header ?? {},
-      body: requestData?.body ?? {},
-      cookie: requestData?.cookie ?? {},
+      path: restoredData.path ?? requestData?.path ?? {},
+      query: restoredData.query ?? requestData?.query ?? {},
+      header:
+        Object.keys(restoredHeader).length > 0
+          ? restoredHeader
+          : (requestData?.header ?? {}),
+      body: restoredData.body ?? requestData?.body ?? {},
+      cookie: restoredData.cookie ?? requestData?.cookie ?? {},
     };
   }, [examples, exampleId, route, method, storageKeys]);
 
@@ -267,35 +373,46 @@ export default function PlaygroundClient({
   });
 
   const onUpdateDebounced = useEffectEvent((values: FormValues) => {
-    // 保存认证字段
-    for (const item of inputs) {
-      const value = get(values, item.fieldName);
+    // 只在客户端环境中保存到 localStorage
+    if (typeof window !== "undefined") {
+      // 保存认证字段
+      for (const item of inputs) {
+        const value = get(values, item.fieldName);
 
-      if (value) {
-        try {
-          localStorage.setItem(
-            storageKeys.AuthField(item),
-            JSON.stringify(value),
-          );
-        } catch {
-          // 忽略 localStorage 写入错误（如存储空间已满）
+        if (value) {
+          try {
+            localStorage.setItem(
+              storageKeys.AuthField(item),
+              JSON.stringify(value),
+            );
+          } catch {
+            // 忽略 localStorage 写入错误（如存储空间已满）
+          }
         }
       }
-    }
 
-    // 保存整个表单数据到 localStorage，以接口为 key
-    try {
-      const apiStorageKey = storageKeys.ApiForm(route, method);
-      const formDataToStore = {
-        path: values.path ?? {},
-        query: values.query ?? {},
-        header: values.header ?? {},
-        body: values.body ?? {},
-        cookie: values.cookie ?? {},
-      };
-      localStorage.setItem(apiStorageKey, JSON.stringify(formDataToStore));
-    } catch {
-      // 忽略 localStorage 写入错误（如存储空间已满）
+      // 保存 header 到公共存储（所有接口共享）
+      try {
+        const commonHeadersKey = storageKeys.CommonHeaders();
+        const headersToStore = values.header ?? {};
+        localStorage.setItem(commonHeadersKey, JSON.stringify(headersToStore));
+      } catch {
+        // 忽略 localStorage 写入错误（如存储空间已满）
+      }
+
+      // 保存其他字段（path, query, body, cookie）到接口特定存储
+      try {
+        const apiStorageKey = storageKeys.ApiForm(route, method);
+        const formDataToStore = {
+          path: values.path ?? {},
+          query: values.query ?? {},
+          body: values.body ?? {},
+          cookie: values.cookie ?? {},
+        };
+        localStorage.setItem(apiStorageKey, JSON.stringify(formDataToStore));
+      } catch {
+        // 忽略 localStorage 写入错误（如存储空间已满）
+      }
     }
 
     const data = {
@@ -397,13 +514,20 @@ export default function PlaygroundClient({
               securities={securities}
               securityId={securityId}
               setSecurityId={setSecurityId}
+              open={panelStates.authorization}
+              onOpenChange={(open) => updatePanelState("authorization", open)}
             >
               {inputs.map((input) => (
                 <Fragment key={input.fieldName}>{input.children}</Fragment>
               ))}
             </SecurityTabs>
           )}
-          <FormBody body={body} parameters={parameters} />
+          <FormBody
+            body={body}
+            parameters={parameters}
+            panelStates={panelStates}
+            updatePanelState={updatePanelState}
+          />
           {testQuery.data ? (
             <ResultDisplay data={testQuery.data} reset={testQuery.reset} />
           ) : null}
@@ -418,17 +542,25 @@ function SecurityTabs({
   setSecurityId,
   securityId,
   children,
+  open,
+  onOpenChange,
 }: {
   securities: SecurityEntry[][];
   securityId: number;
   setSecurityId: (value: number) => void;
   children: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [oauthOpen, setOauthOpen] = useState(false);
   const form = useFormContext();
 
   const result = (
-    <CollapsiblePanel title="Authorization">
+    <CollapsiblePanel
+      title="Authorization"
+      open={open}
+      onOpenChange={onOpenChange}
+    >
       <Select
         value={securityId.toString()}
         onValueChange={(v) => setSecurityId(Number(v))}
@@ -464,9 +596,9 @@ function SecurityTabs({
           <OauthDialog
             scheme={item}
             scopes={item.scopes}
-            open={open}
+            open={oauthOpen}
             setOpen={(v) => {
-              setOpen(v);
+              setOauthOpen(v);
               if (v) {
                 setSecurityId(i);
               }
@@ -488,13 +620,26 @@ const ParamTypes = ["path", "header", "cookie", "query"] as const;
 function FormBody({
   parameters = [],
   body,
-}: Pick<PlaygroundClientProps, "parameters" | "body">) {
+  panelStates,
+  updatePanelState,
+}: Pick<PlaygroundClientProps, "parameters" | "body"> & {
+  panelStates: Record<
+    "authorization" | "header" | "cookie" | "query" | "path" | "body",
+    boolean
+  >;
+  updatePanelState: (
+    panelId: "authorization" | "header" | "cookie" | "query" | "path" | "body",
+    open: boolean,
+  ) => void;
+}) {
   const { renderParameterField, renderBodyField } =
     useApiContext().client.playground ?? {};
   const panels = useMemo(() => {
     return ParamTypes.map((type) => {
       const items = parameters.filter((v) => v.in === type);
-      if (items.length === 0) return;
+      if (items.length === 0) return null;
+
+      const panelId = type as "header" | "cookie" | "query" | "path";
 
       return (
         <CollapsiblePanel
@@ -507,6 +652,8 @@ function FormBody({
               path: "Path",
             }[type]
           }
+          open={panelStates[panelId]}
+          onOpenChange={(open) => updatePanelState(panelId, open)}
         >
           {items.map((field) => {
             const fieldName = `${type}.${field.name}` as const;
@@ -533,13 +680,17 @@ function FormBody({
         </CollapsiblePanel>
       );
     });
-  }, [parameters, renderParameterField]);
+  }, [parameters, renderParameterField, panelStates, updatePanelState]);
 
   return (
     <>
       {panels}
       {body && (
-        <CollapsiblePanel title="Body">
+        <CollapsiblePanel
+          title="Body"
+          open={panelStates.body}
+          onOpenChange={(open) => updatePanelState("body", open)}
+        >
           {renderBodyField ? (
             renderBodyField("body", body)
           ) : (
@@ -868,12 +1019,21 @@ function DefaultResultDisplay({
 function CollapsiblePanel({
   title,
   children,
+  open,
+  onOpenChange,
   ...props
 }: Omit<ComponentProps<"div">, "title"> & {
   title: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
   return (
-    <Collapsible {...props} className="border-b last:border-b-0">
+    <Collapsible
+      {...props}
+      open={open}
+      onOpenChange={onOpenChange}
+      className="border-b last:border-b-0"
+    >
       <CollapsibleTrigger className="group w-full flex items-center gap-2 p-3 text-sm font-medium">
         {title}
         <ChevronDown className="ms-auto size-3.5 text-fd-muted-foreground group-data-[state=open]:rotate-180" />
