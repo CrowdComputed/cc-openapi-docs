@@ -6,6 +6,14 @@ const withMDX = createMDX();
 const config = {
   reactStrictMode: true,
   transpilePackages: ["shiki"],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
+  },
 
   async rewrites() {
     return [

@@ -6,10 +6,10 @@ export interface FetchOptions extends RequestData {
   proxyUrl?: string;
 }
 
-export interface FetchResult {
+export interface FetchResult<T = unknown> {
   status: number;
   type: "json" | "html" | "text";
-  data: unknown;
+  data: T;
 }
 
 export interface Fetcher {

@@ -115,6 +115,7 @@ export interface PlaygroundClientOptions {
 
   components?: Partial<{
     ResultDisplay: FC<{ data: FetchResult }>;
+    ResultDisplayExtended: FC<{ data: FetchResult }>;
   }>;
 
   /**
@@ -176,7 +177,10 @@ export default function PlaygroundClient({
     serverRef,
     client: {
       playground: {
-        components: { ResultDisplay = DefaultResultDisplay } = {},
+        components: {
+          ResultDisplay = DefaultResultDisplay,
+          ResultDisplayExtended,
+        } = {},
         requestTimeout = 10,
         transformAuthInputs,
       } = {},
@@ -343,6 +347,35 @@ export default function PlaygroundClient({
     defaultValues,
   });
 
+  // 从 localStorage 恢复响应数据
+  const initialResponse = useMemo<FetchResult | undefined>(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    try {
+      const responseKey = storageKeys.Response(route, method);
+      const stored = localStorage.getItem(responseKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // 验证数据结构是否正确
+        if (
+          parsed &&
+          typeof parsed === "object" &&
+          "status" in parsed &&
+          "type" in parsed &&
+          "data" in parsed
+        ) {
+          return parsed as FetchResult;
+        }
+      }
+    } catch {
+      // 如果解析失败，返回 undefined
+    }
+
+    return undefined;
+  }, [route, method, storageKeys]);
+
   const testQuery = useQuery(async (input: FormValues) => {
     const targetServer = serverRef.current;
     const fetcher = await import("./fetcher").then((mod) =>
@@ -370,7 +403,21 @@ export default function PlaygroundClient({
         ...input._encoded,
       },
     );
-  });
+  }, initialResponse);
+
+  // 当响应数据更新时保存到 localStorage
+  useEffect(() => {
+    if (typeof window === "undefined" || !testQuery.data) {
+      return;
+    }
+
+    try {
+      const responseKey = storageKeys.Response(route, method);
+      localStorage.setItem(responseKey, JSON.stringify(testQuery.data));
+    } catch {
+      // 忽略 localStorage 写入错误（如存储空间已满）
+    }
+  }, [testQuery.data, route, method, storageKeys]);
 
   const onUpdateDebounced = useEffectEvent((values: FormValues) => {
     // 只在客户端环境中保存到 localStorage
@@ -529,7 +576,26 @@ export default function PlaygroundClient({
             updatePanelState={updatePanelState}
           />
           {testQuery.data ? (
-            <ResultDisplay data={testQuery.data} reset={testQuery.reset} />
+            <>
+              <ResultDisplay
+                data={testQuery.data}
+                reset={() => {
+                  testQuery.reset();
+                  // 清除 localStorage 中的响应数据
+                  if (typeof window !== "undefined") {
+                    try {
+                      const responseKey = storageKeys.Response(route, method);
+                      localStorage.removeItem(responseKey);
+                    } catch {
+                      // 忽略错误
+                    }
+                  }
+                }}
+              />
+              {ResultDisplayExtended && (
+                <ResultDisplayExtended data={testQuery.data} />
+              )}
+            </>
           ) : null}
         </form>
       </SchemaProvider>

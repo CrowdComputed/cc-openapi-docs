@@ -1,6 +1,6 @@
 "use client";
 import { defineClientConfig } from "@/openapi/ui/client";
-import { CustomResultDisplay } from "./playground-request-info";
+import { ResultDisplayExtended } from "./result-display-extended";
 
 export default defineClientConfig({
   storageKeyPrefix: "cc-api-docs-",
@@ -11,7 +11,7 @@ export default defineClientConfig({
     },
     requestTimeout: 60,
     components: {
-      ResultDisplay: CustomResultDisplay,
+      ResultDisplayExtended: ResultDisplayExtended,
     },
   },
 });

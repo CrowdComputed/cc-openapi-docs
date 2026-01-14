@@ -1,7 +1,8 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from "react";
 
 export function useQuery<I extends unknown[], T>(
   fn: (...input: I) => Promise<T>,
+  initialData?: T,
 ): {
   start: (...input: I) => void;
   reset: () => void;
@@ -10,7 +11,7 @@ export function useQuery<I extends unknown[], T>(
   isLoading: boolean;
 } {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<T>();
+  const [data, setData] = useState<T | undefined>(initialData);
   const [error, setError] = useState<T>();
   const fnRef = useRef(fn);
   fnRef.current = fn;

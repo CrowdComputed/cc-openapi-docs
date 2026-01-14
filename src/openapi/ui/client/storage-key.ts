@@ -7,7 +7,8 @@ type KeyName =
   | `auth-${string}`
   | `api-${string}`
   | "common-headers"
-  | `panel-state-${string}`;
+  | `panel-state-${string}`
+  | `response-${string}`;
 
 export function useStorageKey() {
   const { storageKeyPrefix } = useApiContext().client;
@@ -27,6 +28,11 @@ export function useStorageKey() {
         getStorageKey(
           storageKeyPrefix,
           `panel-state-${method.toUpperCase()}-${route}`,
+        ),
+      Response: (route: string, method: string) =>
+        getStorageKey(
+          storageKeyPrefix,
+          `response-${method.toUpperCase()}-${route}`,
         ),
     }),
     [storageKeyPrefix],
