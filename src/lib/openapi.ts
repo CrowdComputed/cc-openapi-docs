@@ -1,4 +1,4 @@
-import { createOpenAPI } from "fumadocs-openapi/server";
+import { createOpenAPI } from "@/openapi/server";
 
 export const openapi = createOpenAPI({
   async input() {

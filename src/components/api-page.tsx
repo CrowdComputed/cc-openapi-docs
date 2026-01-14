@@ -1,6 +1,6 @@
-import { createAPIPage } from "fumadocs-openapi/ui";
 import client from "@/components/api-page.client";
 import { openapi } from "@/lib/openapi";
+import { createAPIPage } from "@/openapi/ui/api-page";
 
 export const APIPage = createAPIPage(openapi, {
   client,
@@ -9,8 +9,6 @@ export const APIPage = createAPIPage(openapi, {
   },
   content: {
     renderOperationLayout: async (slots) => {
-      // 在 body 后面添加我们的自定义组件
-      // 使用 DOM 注入器来确保组件在 playground 的 FormProvider 内部渲染
       return (
         <div className="flex flex-col gap-x-6 gap-y-4 @4xl:flex-row @4xl:items-start">
           <div className="min-w-0 flex-1">

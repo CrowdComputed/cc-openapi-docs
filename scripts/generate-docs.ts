@@ -1,6 +1,7 @@
-import * as OpenAPI from "fumadocs-openapi";
 import { rimraf } from "rimraf";
 import { openapi } from "@/lib/openapi";
+import type { OutputFile } from "@/openapi/generate-file";
+import * as OpenAPI from "@/openapi/generate-file";
 
 const out = "./content/docs/(api)";
 
@@ -15,7 +16,7 @@ async function generate() {
   await OpenAPI.generateFiles({
     input: openapi,
     output: out,
-    beforeWrite(files) {
+    beforeWrite(files: OutputFile[]) {
       // 优化路径层级：移除 api/v1 前缀
       // 例如：api/v1/generate/xxx/post.mdx -> generate/xxx/post.mdx
       files.forEach((file) => {
