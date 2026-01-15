@@ -16,7 +16,7 @@ export interface Data {
 export interface Output {
   outputId: string;
   status: "finished" | "generating" | "failed" | "waiting";
-  urls: string[];
+  urls?: string[];
   estimateMs: number;
   queueOrder: number;
   startTime: number;

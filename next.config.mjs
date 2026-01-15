@@ -5,7 +5,7 @@ const withMDX = createMDX();
 /** @type {import('next').NextConfig} */
 const config = {
   output: "standalone",
-  reactStrictMode: true,
+  reactStrictMode: false,
   transpilePackages: ["shiki"],
   images: {
     remotePatterns: [

@@ -32,6 +32,8 @@ export function useWebSocket({
   const onMessageRef = useRef(onMessage);
   const taskIdRef = useRef(taskId);
   const getApiConfigRef = useRef(getApiConfig);
+  const pingTimer = useRef<NodeJS.Timeout | null>(null);
+  const lastStatusRef = useRef<Data["status"] | undefined>(undefined);
 
   // 保持 taskId 和 getApiConfig 的最新引用
   useEffect(() => {
@@ -302,7 +304,19 @@ export function useWebSocket({
 
         ws.onopen = () => {
           console.log("WebSocket connected");
+
+          if (pingTimer.current) {
+            clearInterval(pingTimer.current);
+          }
+
           updateStatus("已连接", "text-green-600");
+
+          // 每 5 秒发送一次 ping
+          pingTimer.current = setInterval(() => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+              ws.send("ping");
+            }
+          }, 5000);
 
           // 添加连接成功的日志
           if (containerRef.current) {
@@ -329,6 +343,8 @@ export function useWebSocket({
         ws.onmessage = (event) => {
           try {
             const message = JSON.parse(event.data) as Data;
+            // 更新最后收到的状态
+            lastStatusRef.current = message.status;
             // 存储消息到 ref，只存储 Data 部分，添加时间戳作为 key
             const dataWithTimestamp = {
               ...message,
@@ -359,6 +375,7 @@ export function useWebSocket({
 
         ws.onerror = (error) => {
           console.error("WebSocket error:", error);
+
           updateStatus("连接失败", "text-red-600");
 
           // 添加错误日志
@@ -382,6 +399,12 @@ export function useWebSocket({
 
         ws.onclose = (event) => {
           console.log("WebSocket closed", event);
+
+          if (pingTimer.current) {
+            clearInterval(pingTimer.current);
+            pingTimer.current = null;
+          }
+
           updateStatus("连接已关闭", "text-fd-muted-foreground");
 
           // 添加关闭日志
@@ -409,8 +432,14 @@ export function useWebSocket({
             }
           }
 
-          // WebSocket 关闭后，调用一次 HTTP 接口获取任务状态
-          if (taskIdRef.current && enabled) {
+          // WebSocket 关闭后，如果任务没有完成，调用一次 HTTP 接口获取任务状态
+          // 只有当状态不是 "finished" 或 "failed" 时才需要查询
+          if (
+            taskIdRef.current &&
+            enabled &&
+            lastStatusRef.current !== "finished" &&
+            lastStatusRef.current !== "failed"
+          ) {
             queryTaskStatus();
           }
         };

@@ -134,23 +134,28 @@ export function ResultDisplayExtended({
     taskId: currentData?.data.taskId,
     getApiConfig,
     onMessage: (message) => {
+      console.log("message", message);
       setCurrentData((prev) => {
-        const updated = prev ? { ...prev, data: message } : null;
+        const updated = prev
+          ? {
+              ...prev,
+              data: {
+                ...prev.data,
+                status: message.status,
+                outputs: message.outputs,
+              },
+            }
+          : null;
+        console.log("updated", updated);
 
-        // 当任务完成时，更新 localStorage 中的响应数据
-        if (message.status === "finished" && updated && data.status === 200) {
-          const responseData: FetchResult = {
-            ...data,
-            data: updated,
-          };
-          saveResponseToStorage(responseData);
-        }
+        const responseData: FetchResult = {
+          ...data,
+          data: updated,
+        };
+        saveResponseToStorage(responseData);
 
         return updated;
       });
-      if (message.status === "finished") {
-        // WebSocket 会在 useWebSocket 内部关闭
-      }
     },
     messagesContainerRef: wsMessagesContainerRef,
     messagesCountRef: wsMessagesCountRef,
@@ -202,8 +207,8 @@ export function ResultDisplayExtended({
   // 获取所有媒体 URL（用于预览）
   const allMediaUrls: string[] = currentData
     ? (currentData.data.outputs
-        ?.flatMap((output) => output.urls)
-        .filter((url) => url.length > 0) ?? [])
+        ?.flatMap((output) => output.urls ?? [])
+        .filter((url): url is string => Boolean(url && url.length > 0)) ?? [])
     : [];
 
   // 键盘事件监听：支持左右方向键切换媒体
@@ -265,7 +270,7 @@ export function ResultDisplayExtended({
   const getUrlStartIndex = (index: number): number => {
     let urlStartIndex = 0;
     for (let i = 0; i < index; i++) {
-      urlStartIndex += outputs[i]?.urls.length ?? 0;
+      urlStartIndex += outputs[i]?.urls?.length ?? 0;
     }
     return urlStartIndex;
   };

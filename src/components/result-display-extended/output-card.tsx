@@ -23,9 +23,9 @@ export function OutputCard({
   onPreview,
 }: OutputCardProps) {
   const { status, urls, queueOrder, startTime, outputId } = output;
-  const hasUrls = urls.length > 0;
+  const hasUrls = urls && urls.length > 0;
 
-  if (status === "finished" && hasUrls) {
+  if (status === "finished" && hasUrls && urls) {
     // 已完成：显示媒体
     return (
       <div key={outputId} className="space-y-2">
