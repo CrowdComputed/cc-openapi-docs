@@ -2,11 +2,13 @@ import { docs } from "fumadocs-mdx:collections/server";
 import { type InferPageType, loader } from "fumadocs-core/source";
 import { lucideIconsPlugin } from "fumadocs-core/source/lucide-icons";
 import { openapiPlugin } from "@/openapi/server";
+import { i18n } from "./i18n";
 
 // See https://fumadocs.dev/docs/headless/source-api for more info
 export const source = loader({
   baseUrl: "/",
   source: docs.toFumadocsSource(),
+  i18n,
   plugins: [lucideIconsPlugin(), openapiPlugin()],
 });
 

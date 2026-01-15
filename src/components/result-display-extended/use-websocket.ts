@@ -28,11 +28,13 @@ export function useWebSocket({
   statusRef,
 }: UseWebSocketOptions) {
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const onMessageRef = useRef(onMessage);
   const taskIdRef = useRef(taskId);
   const getApiConfigRef = useRef(getApiConfig);
-  const pingTimer = useRef<NodeJS.Timeout | null>(null);
+  const pingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastStatusRef = useRef<Data["status"] | undefined>(undefined);
 
   // 保持 taskId 和 getApiConfig 的最新引用

@@ -311,7 +311,40 @@ export function FieldInput({
         <SelectContent>
           <SelectItem value="true">True</SelectItem>
           <SelectItem value="false">False</SelectItem>
-          {!isRequired && <SelectItem value="undefined">Unset</SelectItem>}
+        </SelectContent>
+      </Select>
+    );
+  }
+
+  // 处理 string 类型带 enum 的情况
+  if (
+    field.type === "string" &&
+    typeof field === "object" &&
+    field.enum &&
+    Array.isArray(field.enum) &&
+    field.enum.length > 0
+  ) {
+    return (
+      <Select
+        value={value === undefined ? "undefined" : String(value)}
+        onValueChange={(newValue) =>
+          onChange(newValue === "undefined" ? undefined : newValue)
+        }
+        disabled={restField.disabled}
+      >
+        <SelectTrigger
+          id={fieldName}
+          className={props.className}
+          {...restField}
+        >
+          <SelectValue placeholder="Select value" />
+        </SelectTrigger>
+        <SelectContent>
+          {field.enum.map((enumValue) => (
+            <SelectItem key={String(enumValue)} value={String(enumValue)}>
+              {String(enumValue)}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     );
