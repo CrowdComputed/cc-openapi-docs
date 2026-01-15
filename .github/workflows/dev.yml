@@ -74,7 +74,7 @@ jobs:
         env:
           NODE_ENV: production
           NEXT_TELEMETRY_DISABLED: "1"
-        run: pnpm build:development
+        run: pnpm build
 
       # Buildx 用于打镜像；仍然在 runner 上，只是打包产物
       - name: Setup Docker Buildx
