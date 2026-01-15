@@ -113,7 +113,7 @@ jobs:
         with:
           command: |
             set -e
-            cd /opt/cc-deploy/project/cc-next
+            cd /opt/cc-deploy/project/cc-web
             ./deploy_dev.sh
           host: ${{ vars.ECS_HOST }}
           user: ${{ vars.ECS_USER }}

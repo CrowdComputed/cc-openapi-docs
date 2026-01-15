@@ -111,7 +111,7 @@ jobs:
         with:
           command: |
             set -e
-            cd /opt/cc-deploy/project/cc-nex
+            cd /opt/cc-deploy/project/cc-web
             ./deploy_prod.sh latest
           host: ${{ vars.ECS_HOST }}
           user: ${{ vars.ECS_USER }}
