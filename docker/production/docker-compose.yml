@@ -1,0 +1,10 @@
+services:
+  cc-web:
+    build:
+      context: ../../
+      dockerfile: docker/production/Dockerfile
+    image: cc-web
+    ports:
+      - "3005:3000"
+    env_file:
+      - ../../.env

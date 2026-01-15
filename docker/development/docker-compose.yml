@@ -1,0 +1,8 @@
+services:
+  cc-web:
+    build:
+      context: ../../
+      dockerfile: docker/development/Dockerfile
+    image: cc-web
+    ports:
+      - "3005:3000"
