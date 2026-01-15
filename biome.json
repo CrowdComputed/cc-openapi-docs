@@ -28,6 +28,9 @@
       "recommended": true,
       "performance": {
         "noImgElement": "off"
+      },
+      "complexity": {
+        "noUselessFragments": "off"
       }
     },
     "domains": {

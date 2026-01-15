@@ -85,7 +85,7 @@ export function useWebSocket({
       if (containerRef.current) {
         const logElement = createLogElement(
           "http",
-          "HTTP 查询任务状态",
+          "查询任务状态",
           Date.now(),
           { taskId: taskIdRef.current },
         );
@@ -193,7 +193,6 @@ export function useWebSocket({
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
-        fractionalSecondDigits: 3,
       });
 
       let metadataHtml = "";
@@ -209,10 +208,9 @@ export function useWebSocket({
 
       div.innerHTML = `
         <div class="flex items-center justify-between mb-1">
-          <span class="font-semibold text-fd-foreground">[${type.toUpperCase()}]</span>
+          <span class="font-semibold text-fd-foreground">[${type.toUpperCase()}] ${content}</span>
           <span class="text-fd-muted-foreground">${timeStr}</span>
         </div>
-        <div class="text-fd-foreground">${content}</div>
         ${metadataHtml}
       `;
 

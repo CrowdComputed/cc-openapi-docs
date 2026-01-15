@@ -115,7 +115,11 @@ export interface PlaygroundClientOptions {
 
   components?: Partial<{
     ResultDisplay: FC<{ data: FetchResult }>;
-    ResultDisplayExtended: FC<{ data: FetchResult }>;
+    ResultDisplayExtended: FC<{
+      data: FetchResult;
+      route?: string;
+      method?: string;
+    }>;
   }>;
 
   /**
@@ -260,17 +264,17 @@ export default function PlaygroundClient({
     // 在 SSR 阶段，直接使用示例数据
     // localStorage 只在客户端可用
     if (typeof window === "undefined") {
-    const requestData = examples.find(
-      (example) => example.id === exampleId,
-    )?.data;
+      const requestData = examples.find(
+        (example) => example.id === exampleId,
+      )?.data;
 
-    return {
-      path: requestData?.path ?? {},
-      query: requestData?.query ?? {},
-      header: requestData?.header ?? {},
-      body: requestData?.body ?? {},
-      cookie: requestData?.cookie ?? {},
-    };
+      return {
+        path: requestData?.path ?? {},
+        query: requestData?.query ?? {},
+        header: requestData?.header ?? {},
+        body: requestData?.body ?? {},
+        cookie: requestData?.cookie ?? {},
+      };
     }
 
     // 客户端：从 localStorage 恢复表单数据
@@ -400,33 +404,19 @@ export default function PlaygroundClient({
     }
   }, [route, method, storageKeys, testQuery.data, testQuery.setData]);
 
-  // 当响应数据更新时保存到 localStorage
-  useEffect(() => {
-    if (typeof window === "undefined" || !testQuery.data) {
-      return;
-    }
-
-    try {
-      const responseKey = storageKeys.Response(route, method);
-      localStorage.setItem(responseKey, JSON.stringify(testQuery.data));
-    } catch {
-      // 忽略 localStorage 写入错误（如存储空间已满）
-    }
-  }, [testQuery.data, route, method, storageKeys]);
-
   const onUpdateDebounced = useEffectEvent((values: FormValues) => {
     // 只在客户端环境中保存到 localStorage
     if (typeof window !== "undefined") {
       // 保存认证字段
-    for (const item of inputs) {
-      const value = get(values, item.fieldName);
+      for (const item of inputs) {
+        const value = get(values, item.fieldName);
 
-      if (value) {
+        if (value) {
           try {
-        localStorage.setItem(
-          storageKeys.AuthField(item),
-          JSON.stringify(value),
-        );
+            localStorage.setItem(
+              storageKeys.AuthField(item),
+              JSON.stringify(value),
+            );
           } catch {
             // 忽略 localStorage 写入错误（如存储空间已满）
           }
@@ -588,7 +578,11 @@ export default function PlaygroundClient({
                 }}
               />
               {ResultDisplayExtended && (
-                <ResultDisplayExtended data={testQuery.data} />
+                <ResultDisplayExtended
+                  data={testQuery.data}
+                  route={route}
+                  method={method}
+                />
               )}
             </>
           ) : null}

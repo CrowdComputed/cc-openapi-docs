@@ -1,8 +1,8 @@
 "use client";
 import { Loader2, XCircle } from "lucide-react";
 import { MediaThumbnail } from "./media-thumbnail";
-import { formatRemainingTime } from "./utils";
 import type { Output } from "./types";
+import { formatRemainingTime } from "./utils";
 
 interface OutputCardProps {
   output: Output;
@@ -95,9 +95,7 @@ export function OutputCard({
         {status === "failed" && (
           <>
             <XCircle className="w-8 h-8 mx-auto text-fd-destructive" />
-            <p className="text-sm font-medium text-fd-destructive">
-              生成失败
-            </p>
+            <p className="text-sm font-medium text-fd-destructive">生成失败</p>
           </>
         )}
       </div>

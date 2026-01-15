@@ -1,8 +1,9 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import type { FormValues } from "@/openapi/playground/client";
 import type { FetchResult } from "@/openapi/playground/fetcher";
+import { useStorageKey } from "@/openapi/ui/client/storage-key";
 import { useApiContext } from "@/openapi/ui/contexts/api";
 import { resolveServerUrl, withBase } from "@/openapi/utils/url";
 import { OutputCard } from "./output-card";
@@ -15,8 +16,12 @@ import { useWebSocket } from "./use-websocket";
  */
 export function ResultDisplayExtended({
   data,
+  route,
+  method,
 }: {
   data: FetchResult<unknown>;
+  route?: string;
+  method?: string;
 }) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewIndex, setPreviewIndex] = useState(0);
@@ -32,6 +37,7 @@ export function ResultDisplayExtended({
   // 获取 OpenAPI context 信息
   const { serverRef } = useApiContext();
   const form = useFormContext<FormValues>();
+  const storageKeys = useStorageKey();
 
   // 初始化数据
   useEffect(() => {
@@ -86,6 +92,41 @@ export function ResultDisplayExtended({
     return { baseUrl, headers };
   };
 
+  // 保存 response 到 localStorage 的函数
+  const saveResponseToStorage = useCallback(
+    (responseData: FetchResult) => {
+      if (typeof window === "undefined" || responseData.status !== 200) {
+        return;
+      }
+
+      // 如果没有 route 和 method，尝试从 form 的 _encoded 中获取
+      const finalRoute = route;
+      const finalMethod =
+        method ??
+        (() => {
+          try {
+            const formValues = form.getValues();
+            return formValues._encoded?.method as string | undefined;
+          } catch {
+            return undefined;
+          }
+        })();
+
+      // 如果仍然没有 route 和 method，无法保存
+      if (!finalRoute || !finalMethod) {
+        return;
+      }
+
+      try {
+        const responseKey = storageKeys.Response(finalRoute, finalMethod);
+        localStorage.setItem(responseKey, JSON.stringify(responseData));
+      } catch (error) {
+        console.error("Failed to save response to localStorage:", error);
+      }
+    },
+    [route, method, storageKeys, form],
+  );
+
   // WebSocket 连接
   useWebSocket({
     websocketUrl: currentData?.data.websocket,
@@ -93,7 +134,20 @@ export function ResultDisplayExtended({
     taskId: currentData?.data.taskId,
     getApiConfig,
     onMessage: (message) => {
-      setCurrentData((prev) => (prev ? { ...prev, data: message } : null));
+      setCurrentData((prev) => {
+        const updated = prev ? { ...prev, data: message } : null;
+
+        // 当任务完成时，更新 localStorage 中的响应数据
+        if (message.status === "finished" && updated && data.status === 200) {
+          const responseData: FetchResult = {
+            ...data,
+            data: updated,
+          };
+          saveResponseToStorage(responseData);
+        }
+
+        return updated;
+      });
       if (message.status === "finished") {
         // WebSocket 会在 useWebSocket 内部关闭
       }
@@ -103,6 +157,17 @@ export function ResultDisplayExtended({
     messagesRef: wsMessagesRef,
     statusRef: wsStatusRef,
   });
+
+  // 当 currentData 更新时，也更新 localStorage（用于初始数据和其他更新）
+  useEffect(() => {
+    if (currentData && data.status === 200) {
+      const responseData: FetchResult = {
+        ...data,
+        data: currentData,
+      };
+      saveResponseToStorage(responseData);
+    }
+  }, [currentData, data, saveResponseToStorage]);
 
   // 倒计时逻辑
   useEffect(() => {
