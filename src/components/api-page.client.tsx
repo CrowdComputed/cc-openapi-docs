@@ -9,7 +9,7 @@ export default defineClientConfig({
       console.log(inputs);
       return inputs;
     },
-    requestTimeout: 60,
+    requestTimeout: 60 * 20,
     components: {
       ResultDisplayExtended: ResultDisplayExtended,
     },

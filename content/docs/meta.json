@@ -4,15 +4,14 @@
   "icon": "Building",
   "root": true,
   "pages": [
-    "---Developer Docs---",
-    "index",
+    "---Introduction---",
     "quick-start",
-    "self-host",
-    "features",
-    "resources",
-    "integrations",
-    "guides",
-    "---References---",
+    "welcome",
+    "pricing",
+    "---Documentation---",
+    "workflow-api",
+    "global-api",
+    "---Workflow API---",
     "...(api)"
   ]
 }

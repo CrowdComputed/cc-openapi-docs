@@ -1,0 +1,245 @@
+---
+title: Workflow API
+description: Workflow接口提供了快速生图或视频的功能，支持多种调用模式和参数类型。
+---
+
+## 接口信息
+
+- **接口地址**: `POST /api/v1/generate/{workflow}`
+- **Content-Type**: `application/json`
+
+## 调用模式
+
+接口支持同步、异步两种调用模式，通过`mode`参数指定：
+
+### 1. 同步模式 (mode=sync)
+
+- **特点**: 接口会一直处于阻塞状态，直到生成任务完成、终止或失败
+- **适用场景**: 需要立即获取结果的场景
+- **返回**: 直接返回生成结果
+- **状态查询**: 如需在调用后实时查询状态请参考 [Global API 说明-状态](#状态查询)
+
+### 2. 异步模式
+
+#### 2.1 WebSocket 模式 (mode=async_websocket)
+
+- **特点**: 接口调用立即返回，任务进度通过 WebSocket 推送
+- **适用场景**: 需要实时获取任务进度的场景
+- **返回**: 任务提交信息，包含 WebSocket 连接地址
+- **状态查询**: 如需在调用后实时查询状态请参考 [Global API 说明-状态](#状态查询)
+
+#### 2.2 回调模式 (mode=async_callback)
+
+- **特点**: 接口调用立即返回，任务进度通过 HTTP 回调推送
+- **适用场景**: 服务端需要接收任务进度通知的场景
+- **返回**: 任务提交信息
+- **回调**: 服务器会向指定 URL 发送 POST 请求，携带任务进度信息
+- **状态查询**: 如需在调用后实时查询状态请参考 [Global API 说明-状态](#状态查询)
+
+## 请求参数
+
+### URL 参数
+
+| 参数名     | 类型    | 必填     | 说明                                                                                  | 示例                                |
+| ---------- | ------- | -------- | ------------------------------------------------------------------------------------- | ----------------------------------- |
+| workflow   | string  | 是       | 工作流标识符                                                                          | text-to-image                       |
+| mode       | string  | 否       | 调用模式，默认为 sync                                                                 | sync/async_websocket/async_callback |
+| callback   | string  | 条件必填 | 回调 URL，mode=async_callback 时必填                                                  | https://your-domain.com/callback    |
+| costLookup | boolean | 否       | 默认值为 false，如果指定为 true，用于查询参数对应的积分消耗值，接口不实际执行生成任务 | false                               |
+
+### 请求体参数
+
+请求体为 JSON 格式，参数根据具体工作流配置动态确定。常见参数类型包括：
+
+#### 基础参数类型
+
+| 参数类型     | 说明       | 示例值              |
+| ------------ | ---------- | ------------------- |
+| string       | 字符串类型 | "hello world"       |
+| number       | 数字类型   | 42                  |
+| string array | 字符串数组 | "item1,item2,item3" |
+| number array | 数字数组   | "1,2,3,4"           |
+
+#### 特殊参数类型
+
+| 参数类型     | 说明     | 示例值                      |
+| ------------ | -------- | --------------------------- |
+| image upload | 图片上传 | 支持 URL 和 Base64 两种格式 |
+
+> ⚠️ **注意：**  
+> 仅支持 `jpg` 和 `png` 格式的图片作为参数传递给 workflow。
+
+## 响应格式
+
+### 成功响应
+
+```json
+{
+    "code": "Success",
+    "data": {
+        "websocket": "wss://crowdcomputed.com/user/20250415193856584384",
+        "spend": 100,
+        "balance": 3900,
+        "taskId": "582079535692914438",
+        "status": "finished",
+        "outputs": [...]
+    }
+}
+```
+
+#### 成功响应字段
+
+| 字段名 | 类型   | 说明         | 示例             |
+| ------ | ------ | ------------ | ---------------- |
+| code   | string | 响应状态码   | "Success"        |
+| data   | object | 响应数据对象 | 包含任务相关信息 |
+
+#### data 对象字段
+
+| 字段名    | 类型   | 说明                                            | 示例                                                |
+| --------- | ------ | ----------------------------------------------- | --------------------------------------------------- |
+| websocket | string | WebSocket 连接地址，mode=async_websocket 时返回 | "wss://crowdcomputed.com/user/20250415193856584384" |
+| spend     | number | 本次任务消耗的积分/点数                         | 100                                                 |
+| balance   | number | 用户剩余积分/点数                               | 3900                                                |
+| taskId    | string | 任务唯一标识符                                  | "582079535692914438"                                |
+| status    | string | 任务状态                                        | "waiting"/"generating"/"finished"/"failed"          |
+| outputs   | array  | 输出结果数组，任务完成时包含                    | 包含多个输出对象                                    |
+
+### 失败响应
+
+```json
+{
+  "code": "Failed",
+  "message": "In async callback mode, the callback parameter is not allowed to be null"
+}
+```
+
+#### 失败响应字段
+
+| 字段名  | 类型   | 说明       | 示例             |
+| ------- | ------ | ---------- | ---------------- |
+| code    | string | 响应状态码 | "Failed"         |
+| message | string | 错误消息   | "invalid params" |
+
+> **说明：**  
+> 当任务执行失败时，系统会将任务消耗的积分退还给用户。
+
+### 任务进度信息格式
+
+无论是 WebSocket 推送还是 HTTP 回调，任务进度信息的 JSON 格式都是一致的：
+
+```json
+{
+  "taskId": "582079535692914438",
+  "status": "finished",
+  "outputs": [
+    {
+      "outputId": "582079535692914438_0001",
+      "status": "finished",
+      "reSchedule": false,
+      "urls": [
+        "dev/images/task/582079535692914438/output/20250829220046913955.jpg"
+      ],
+      "estimateMs": 15000,
+      "queueOrder": 0,
+      "startTime": 1756504840,
+      "endTime": 1756504847
+    }
+  ]
+}
+```
+
+#### 顶层字段
+
+| 字段名  | 类型   | 说明           | 可能的值                           |
+| ------- | ------ | -------------- | ---------------------------------- |
+| taskId  | string | 任务唯一标识符 | 数字字符串                         |
+| status  | string | 任务整体状态   | waiting/generating/finished/failed |
+| outputs | array  | 输出结果数组   | 包含多个输出对象                   |
+
+#### outputs 数组中的字段
+
+| 字段名     | 类型    | 说明                                                                                                                                                                                                             | 示例                                   |
+| ---------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| outputId   | string  | 输出项唯一标识符                                                                                                                                                                                                 | "582079535692914438_0001"              |
+| status     | string  | 输出项状态                                                                                                                                                                                                       | waiting/generating/finished/failed     |
+| reSchedule | boolean | 标识任务是否因节点故障或超时而发生重新调度。当计算节点突然失效或任务执行超时时，系统会将任务重新分配到其他可用节点继续执行。重调度可能会延长任务的总体执行时间。任务重分配只会执行一次，如再次超时，任务会失败。 | true/false                             |
+| urls       | array   | 生成文件的 URL 数组                                                                                                                                                                                              | ["dev/images/task/xxx/output/xxx.jpg"] |
+| estimateMs | number  | 预估耗时（毫秒）- 在任务开始的时候一次性预估                                                                                                                                                                     | 15000                                  |
+| queueOrder | number  | 队列顺序                                                                                                                                                                                                         | 0                                      |
+| startTime  | number  | 开始时间戳                                                                                                                                                                                                       | 1756504840                             |
+| endTime    | number  | 结束时间戳                                                                                                                                                                                                       | 1756504847                             |
+
+#### 状态说明
+
+| 状态值     | 说明       | 出现时机                   |
+| ---------- | ---------- | -------------------------- |
+| waiting    | 任务等待中 | 任务已创建，等待执行       |
+| generating | 任务生成中 | 任务正在执行生成过程       |
+| finished   | 任务已完成 | 任务成功完成，包含输出结果 |
+| failed     | 任务失败   | 任务执行过程中出现错误     |
+
+## 使用示例
+
+### 1. 同步模式示例
+
+```bash
+curl -X POST "http://your-domain.com/api/v1/generate/text-to-image?mode=sync" \
+  -H "Authorization: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "a beautiful sunset",
+    "width": 512,
+    "height": 512
+  }'
+```
+
+### 2. 异步回调模式示例
+
+```bash
+curl -X POST "http://your-domain.com/api/v1/generate/text-to-image?mode=async_callback&callback=https://your-domain.com/callback" \
+  -H "Authorization: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "a beautiful sunset",
+    "width": 512,
+    "height": 512
+  }'
+```
+
+### 3. 参数积分消耗查询示例
+
+```bash
+curl -X POST "http://your-domain.com/api/v1/generate/text-to-image?costLookup=true" \
+  -H "Authorization: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "a beautiful sunset",
+    "width": 512,
+    "height": 512
+  }'
+```
+
+### 4. 图片上传参数示例
+
+```json
+{
+  "prompt": "a cat sitting on a chair",
+  "uploadImage": {
+    "type": "url",
+    "url": "https://example.com/cat.jpg"
+  }
+}
+```
+
+或者使用 Base64：
+
+```json
+{
+  "prompt": "a cat sitting on a chair",
+  "uploadImage": {
+    "type": "base64",
+    "base64Content": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."
+  }
+}
+```

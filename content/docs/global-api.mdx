@@ -1,0 +1,290 @@
+---
+title: Global API
+description: Global API接口提供了会员信息查询、任务状态查询和历史任务查询等功能。
+---
+
+## 接口列表
+
+### 1. 会员信息查询
+
+#### 接口信息
+
+- **接口地址**: `GET /api/v1/member/info`
+- **请求方式**: GET
+- **认证要求**: 需要 API Key 认证
+
+#### 请求参数
+
+无需额外参数，通过 API Key 自动识别用户身份。
+
+#### 响应格式
+
+##### 成功响应
+
+```json
+{
+    "code": "Success",
+    "message": "Success",
+    "data": {
+        "memberType": "basic",
+        "periodType": "month",
+        "payType": "alipay",
+        "nextPayTime": 1704067200,
+        "nextPointsResetTime": 1706745600,
+        "nextPayAmount": 99,
+        "usedPoints": 1500,
+        "usedTemporaryPoints": 100,
+        "usedPermanentPoints": 200,
+        "totalPoints": 10000,
+        "currentTemporaryPoints": 5000,
+        "currentPermanentPoints": 5000
+        "status": "subscribed"
+    }
+}
+```
+
+##### 响应字段说明
+
+| 字段名  | 类型   | 说明         | 示例             |
+| ------- | ------ | ------------ | ---------------- |
+| code    | string | 响应状态码   | "Success"        |
+| message | string | 响应消息     | "Success"        |
+| data    | object | 用户信息数据 | 包含用户会员信息 |
+
+##### data 对象字段
+
+| 字段名                 | 类型   | 说明               | 示例                                      |
+| ---------------------- | ------ | ------------------ | ----------------------------------------- |
+| memberType             | string | 会员类型           | "hobby"/"basic"/"professional"/"ultimate" |
+| periodType             | string | 付费周期类型       | "month"/"year"                            |
+| payType                | string | 支付方式           | "alipay"/"paypal"                         |
+| nextPayTime            | number | 下次付费时间戳     | 1704067200                                |
+| nextPointsResetTime    | number | 积分重置时间戳     | 1706745600                                |
+| nextPayAmount          | number | 下次付费金额（元） | 99                                        |
+| usedPoints             | number | 已使用积分数量     | 1500                                      |
+| usedTemporaryPoints    | number | 已使用周期积分数量 | 1500                                      |
+| usedPermanentPoints    | number | 已使用永久积分数量 | 1500                                      |
+| totalPoints            | number | 总积分数量         | 10000                                     |
+| currentTemporaryPoints | number | 当前周期积分余额   | 1500                                      |
+| currentPermanentPoints | number | 当前永久积分余额   | 1500                                      |
+| status                 | string | 会员状态           | "subscribed"/"unsubscribed"               |
+
+##### 失败响应
+
+```json
+{
+  "code": "Failed",
+  "message": "unauthorized",
+  "data": null
+}
+```
+
+---
+
+### 2. 任务状态查询
+
+#### 接口信息
+
+- **接口地址**: `GET /api/v1/query/status`
+- **请求方式**: GET
+- **认证要求**: 需要 API Key 认证
+
+#### 请求参数
+
+| 参数名 | 类型   | 必填 | 说明           | 示例                 |
+| ------ | ------ | ---- | -------------- | -------------------- |
+| taskId | string | 是   | 任务唯一标识符 | "582079535692914438" |
+
+#### 响应格式
+
+##### 成功响应
+
+```json
+{
+  "code": "Success",
+  "message": "Success",
+  "data": {
+    "taskId": "582079535692914438",
+    "status": "finished",
+    "outputs": [
+      {
+        "outputId": "582079535692914438_0001",
+        "status": "finished",
+        "urls": [
+          "https://data.crowdcomputed.cc/prod/images/task/582478659185549062/output/20250901160761771586.jpg"
+        ],
+        "estimateMs": 15000,
+        "queueOrder": 0,
+        "startTime": 1756504840,
+        "endTime": 1756504847
+      }
+    ]
+  }
+}
+```
+
+##### 响应字段说明
+
+| 字段名  | 类型   | 说明         | 示例             |
+| ------- | ------ | ------------ | ---------------- |
+| code    | string | 响应状态码   | "Success"        |
+| message | string | 响应消息     | "Success"        |
+| data    | object | 任务状态数据 | 包含任务详细信息 |
+
+##### data 对象字段
+
+| 字段名  | 类型   | 说明           | 可能的值                           |
+| ------- | ------ | -------------- | ---------------------------------- |
+| taskId  | string | 任务唯一标识符 | 数字字符串                         |
+| status  | string | 任务整体状态   | waiting/generating/finished/failed |
+| outputs | array  | 输出结果数组   | 包含多个输出对象                   |
+
+##### outputs 数组中的字段
+
+| 字段名     | 类型   | 说明                | 示例                                                                  |
+| ---------- | ------ | ------------------- | --------------------------------------------------------------------- |
+| outputId   | string | 输出项唯一标识符    | "582079535692914438_0001"                                             |
+| status     | string | 输出项状态          | waiting/generating/finished/failed                                    |
+| urls       | array  | 生成文件的 URL 数组 | ["https://data.crowdcomputed.cc/prod/images/task/xxx/output/xxx.jpg"] |
+| estimateMs | number | 预估耗时（毫秒）    | 15000                                                                 |
+| queueOrder | number | 队列顺序            | 0                                                                     |
+| startTime  | number | 开始时间戳          | 1756504840                                                            |
+| endTime    | number | 结束时间戳          | 1756504847                                                            |
+
+##### 状态说明
+
+| 状态值     | 说明       | 出现时机                   |
+| ---------- | ---------- | -------------------------- |
+| waiting    | 任务等待中 | 任务已创建，等待执行       |
+| generating | 任务生成中 | 任务正在执行生成过程       |
+| finished   | 任务已完成 | 任务成功完成，包含输出结果 |
+| failed     | 任务失败   | 任务执行过程中出现错误     |
+
+##### 失败响应
+
+```json
+{
+  "code": "Failed",
+  "message": "task not found",
+  "data": null
+}
+```
+
+---
+
+### 3. 历史任务查询
+
+#### 接口信息
+
+- **接口地址**: `GET /api/v1/generate/history`
+- **请求方式**: GET
+- **认证要求**: 需要 API Key 认证
+
+#### 请求参数
+
+| 参数名    | 类型   | 必填 | 说明                | 示例            |
+| --------- | ------ | ---- | ------------------- | --------------- |
+| workflow  | string | 是   | 工作流标识符        | "text-to-image" |
+| pageIndex | number | 否   | 页码，默认为 1      | 1               |
+| pageSize  | number | 否   | 每页数量，默认为 20 | 20              |
+
+#### 响应格式
+
+##### 成功响应
+
+```json
+{
+  "code": "Success",
+  "message": "Success",
+  "data": {
+    "total": 50,
+    "pageIndex": 1,
+    "pageSize": 20,
+    "pageData": [
+      {
+        "taskId": "582079535692914438",
+        "status": "finished",
+        "outputs": [
+          {
+            "outputId": "582079535692914438_0001",
+            "status": "finished",
+            "urls": [
+              "https://data.crowdcomputed.cc/prod/images/task/582478659185549062/output/20250901160761771586.jpg"
+            ],
+            "estimateMs": 15000,
+            "queueOrder": 0,
+            "startTime": 1756504840,
+            "endTime": 1756504847
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+##### 响应字段说明
+
+| 字段名  | 类型   | 说明         | 示例                   |
+| ------- | ------ | ------------ | ---------------------- |
+| code    | string | 响应状态码   | "Success"              |
+| message | string | 响应消息     | "Success"              |
+| data    | object | 分页数据对象 | 包含分页信息和任务列表 |
+
+##### data 对象字段
+
+| 字段名    | 类型   | 说明         | 示例                 |
+| --------- | ------ | ------------ | -------------------- |
+| total     | number | 总记录数     | 50                   |
+| pageIndex | number | 当前页码     | 1                    |
+| pageSize  | number | 每页数量     | 20                   |
+| pageData  | array  | 任务数据数组 | 包含多个任务状态对象 |
+
+##### pageData 数组中的任务对象字段
+
+任务对象结构与[任务状态查询](#2-任务状态查询)中的 data 对象结构相同，包含：
+
+- `taskId`: 任务 ID
+- `status`: 任务状态
+- `outputs`: 输出结果数组
+
+##### 失败响应
+
+```json
+{
+  "code": "Failed",
+  "message": "workflow is empty",
+  "data": null
+}
+```
+
+## 使用示例
+
+### 1. 查询用户信息
+
+```bash
+curl -X GET "http://your-domain.com/api/v1/member/info" \
+  -H "Authorization: YOUR_API_KEY"
+```
+
+### 2. 查询任务状态
+
+```bash
+curl -X GET "http://your-domain.com/api/v1/query/status?taskId=582079535692914438" \
+  -H "Authorization: YOUR_API_KEY"
+```
+
+### 3. 查询生成历史
+
+```bash
+curl -X GET "http://your-domain.com/api/v1/generate/history?workflow=text-to-image&pageIndex=1&pageSize=10" \
+  -H "Authorization: YOUR_API_KEY"
+```
+
+## 注意事项
+
+1. **认证要求**: 所有接口都需要在请求头中提供有效的 API Key
+2. **权限控制**: 用户只能查询自己的任务和会员信息
+3. **分页限制**: 生成历史查询支持分页，建议合理设置 pageSize 避免单次请求数据过大
+4. **状态实时性**: 任务状态查询返回的是实时状态，建议根据业务需要定期轮询
+5. **错误处理**: 请根据返回的错误码和消息进行相应的错误处理

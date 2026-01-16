@@ -47,15 +47,25 @@ async function generate() {
         files.forEach((file) => {
           if (file.path.startsWith(`api/${schemaId}/`)) {
             file.path = file.path.replace(new RegExp(`^api/${schemaId}/`), "");
-          } else if (file.path.startsWith("api/v1/")) {
-            file.path = file.path.replace(/^api\/v1\//, "");
+          } else if (file.path.startsWith("api/v1/generate/")) {
+            file.path = file.path.replace(/^api\/v1\/generate\//, "");
+          }
+
+          // Convert path from "interface-name/method.mdx" to "interface-name.mdx"
+          // This flattens the sidebar structure to a single level
+          // Example: ai-image-editing/post.mdx -> ai-image-editing.mdx
+          const pathMatch = file.path.match(/^([^/]+)\/([^/]+)\.mdx$/);
+          if (pathMatch) {
+            const [, interfaceName] = pathMatch;
+            // Since each interface has only one method, use interface name as filename
+            file.path = `${interfaceName}.mdx`;
           }
 
           // If not default language, add language suffix to filename
-          // Example: post.mdx -> post.zh.mdx
+          // Example: ai-image-editing.mdx -> ai-image-editing.zh.mdx
           if (lang !== i18n.defaultLanguage) {
-            // Match filename, e.g., generate/ai-image-editing/post.mdx
-            file.path = file.path.replace(/(\/[^/]+)\.mdx$/, `$1.${lang}.mdx`);
+            // Match filename, e.g., ai-image-editing.mdx
+            file.path = file.path.replace(/(\.mdx)$/, `.${lang}$1`);
           }
         });
       },

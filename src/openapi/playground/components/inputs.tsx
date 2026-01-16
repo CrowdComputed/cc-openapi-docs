@@ -361,10 +361,13 @@ export function FieldInput({
         step={field.type === "integer" ? 1 : undefined}
         value={value ?? ""}
         onChange={(e) => {
+          console.log("e.target.value", e.target.valueAsNumber);
           if (isNumber && !Number.isNaN(e.target.valueAsNumber)) {
             onChange(e.target.valueAsNumber);
           } else if (!isNumber) {
             onChange(e.target.value);
+          } else {
+            onChange("");
           }
         }}
         {...restField}
