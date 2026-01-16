@@ -9,7 +9,7 @@ export function baseOptions(locale: string): BaseLayoutProps {
       url: `/${locale}`,
     },
     searchToggle: {
-      enabled: false, // 禁用搜索功能，避免翻译文件结构不匹配的问题
+      enabled: false, // Disable search to avoid translation file structure mismatch
     },
   };
 }

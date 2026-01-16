@@ -10,7 +10,7 @@ interface MediaPreviewProps {
 }
 
 /**
- * 媒体预览组件
+ * Media preview component
  */
 export function MediaPreview({ url, previewIndex }: MediaPreviewProps) {
   const mediaType = getMediaType(url);
@@ -78,7 +78,7 @@ export function MediaPreview({ url, previewIndex }: MediaPreviewProps) {
                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
               />
             </svg>
-            下载文件
+            Download file
           </a>
         </div>
       );

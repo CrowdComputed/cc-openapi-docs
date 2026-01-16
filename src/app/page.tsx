@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { i18n } from "@/lib/i18n";
 
-// 根路径重定向到默认语言
+// Redirect root path to default language
 export default function RootPage() {
   redirect(`/${i18n.defaultLanguage}`);
 }

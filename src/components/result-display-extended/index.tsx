@@ -12,7 +12,7 @@ import type { Data, Root } from "./types";
 import { useWebSocket } from "./use-websocket";
 
 /**
- * 扩展的结果显示组件
+ * Extended result display component
  */
 export function ResultDisplayExtended({
   data,
@@ -34,12 +34,12 @@ export function ResultDisplayExtended({
   const wsMessagesCountRef = useRef<HTMLHeadingElement | null>(null);
   const wsStatusRef = useRef<HTMLDivElement | null>(null);
 
-  // 获取 OpenAPI context 信息
+  // Get OpenAPI context information
   const { serverRef } = useApiContext();
   const form = useFormContext<FormValues>();
   const storageKeys = useStorageKey();
 
-  // 初始化数据
+  // Initialize data
   useEffect(() => {
     if (data.status === 200) {
       const rootData = data.data as Root;
@@ -54,7 +54,7 @@ export function ResultDisplayExtended({
     }
   }, [data]);
 
-  // 获取 API base URL 和 headers
+  // Get API base URL and headers
   const getApiConfig = () => {
     const targetServer = serverRef.current;
     const baseUrl = targetServer
@@ -69,7 +69,7 @@ export function ResultDisplayExtended({
     const formValues = form.getValues();
     const headers: Record<string, string> = {};
 
-    // 优先使用 _encoded 中的 header（已编码格式）
+    // Prefer headers from _encoded (encoded format)
     if (formValues._encoded?.header) {
       const encodedHeaders = formValues._encoded.header;
       for (const [key, param] of Object.entries(encodedHeaders)) {
@@ -78,7 +78,7 @@ export function ResultDisplayExtended({
         }
       }
     } else if (formValues.header) {
-      // 如果没有 _encoded，从 form values 中获取
+      // If no _encoded, get from form values
       const headerObj = formValues.header as Record<string, unknown>;
       for (const [key, value] of Object.entries(headerObj)) {
         if (value && typeof value === "object" && "value" in value) {
@@ -92,14 +92,14 @@ export function ResultDisplayExtended({
     return { baseUrl, headers };
   };
 
-  // 保存 response 到 localStorage 的函数
+  // Function to save response to localStorage
   const saveResponseToStorage = useCallback(
     (responseData: FetchResult) => {
       if (typeof window === "undefined" || responseData.status !== 200) {
         return;
       }
 
-      // 如果没有 route 和 method，尝试从 form 的 _encoded 中获取
+      // If no route and method, try to get from form's _encoded
       const finalRoute = route;
       const finalMethod =
         method ??
@@ -112,7 +112,7 @@ export function ResultDisplayExtended({
           }
         })();
 
-      // 如果仍然没有 route 和 method，无法保存
+      // If still no route and method, cannot save
       if (!finalRoute || !finalMethod) {
         return;
       }
@@ -127,7 +127,7 @@ export function ResultDisplayExtended({
     [route, method, storageKeys, form],
   );
 
-  // WebSocket 连接
+  // WebSocket connection
   useWebSocket({
     websocketUrl: currentData?.data.websocket,
     enabled: ["generating", "waiting"].includes(currentData?.data.status ?? ""),
@@ -163,7 +163,7 @@ export function ResultDisplayExtended({
     statusRef: wsStatusRef,
   });
 
-  // 当 currentData 更新时，也更新 localStorage（用于初始数据和其他更新）
+  // When currentData updates, also update localStorage (for initial data and other updates)
   useEffect(() => {
     if (currentData && data.status === 200) {
       const responseData: FetchResult = {
@@ -174,7 +174,7 @@ export function ResultDisplayExtended({
     }
   }, [currentData, data, saveResponseToStorage]);
 
-  // 倒计时逻辑
+  // Countdown logic
   useEffect(() => {
     if (!currentData) {
       return;
@@ -204,14 +204,14 @@ export function ResultDisplayExtended({
     };
   }, [currentData]);
 
-  // 获取所有媒体 URL（用于预览）
+  // Get all media URLs (for preview)
   const allMediaUrls: string[] = currentData
     ? (currentData.data.outputs
         ?.flatMap((output) => output.urls ?? [])
         .filter((url): url is string => Boolean(url && url.length > 0)) ?? [])
     : [];
 
-  // 键盘事件监听：支持左右方向键切换媒体
+  // Keyboard event listener: support left/right arrow keys to switch media
   useEffect(() => {
     if (!previewOpen || allMediaUrls.length <= 1) {
       return;
@@ -266,7 +266,7 @@ export function ResultDisplayExtended({
     setPreviewOpen(true);
   };
 
-  // 计算每个 output 的 URL 起始索引
+  // Calculate URL start index for each output
   const getUrlStartIndex = (index: number): number => {
     let urlStartIndex = 0;
     for (let i = 0; i < index; i++) {
@@ -304,16 +304,16 @@ export function ResultDisplayExtended({
         />
       )}
 
-      {/* 日志列表 */}
+      {/* Log list */}
       <div className="mb-4 space-y-2">
         <div className="flex items-center justify-between">
           <h3 ref={wsMessagesCountRef} className="text-sm font-semibold">
-            日志 (0)
+            Logs (0)
           </h3>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-fd-muted-foreground">状态:</span>
+            <span className="text-xs text-fd-muted-foreground">Status:</span>
             <div ref={wsStatusRef} className="text-xs font-medium">
-              未连接
+              Not connected
             </div>
           </div>
         </div>

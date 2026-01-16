@@ -316,7 +316,7 @@ export function FieldInput({
     );
   }
 
-  // 处理 string 类型带 enum 的情况
+  // Handle string type with enum
   if (
     field.type === "string" &&
     typeof field === "object" &&

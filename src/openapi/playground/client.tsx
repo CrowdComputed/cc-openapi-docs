@@ -196,7 +196,7 @@ export default function PlaygroundClient({
     transformAuthInputs,
   );
 
-  // 面板展开状态管理
+  // Panel expand state management
   type PanelId =
     | "authorization"
     | "header"
@@ -204,7 +204,7 @@ export default function PlaygroundClient({
     | "query"
     | "path"
     | "body";
-  // 服务器端和客户端使用相同的默认值，避免 hydration 错误
+  // Use same default values on server and client to avoid hydration errors
   const [panelStates, setPanelStates] = useState<Record<PanelId, boolean>>({
     authorization: false,
     header: false,
@@ -214,7 +214,7 @@ export default function PlaygroundClient({
     body: false,
   });
 
-  // 在客户端挂载后从 localStorage 恢复面板状态
+  // Restore panel state from localStorage after client mount
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
@@ -237,22 +237,22 @@ export default function PlaygroundClient({
         }
       }
     } catch {
-      // 如果解析失败，保持默认值
+      // If parsing fails, keep default values
     }
   }, [route, method, storageKeys]);
 
-  // 更新面板状态并保存到 localStorage
+  // Update panel state and save to localStorage
   const updatePanelState = useEffectEvent((panelId: PanelId, open: boolean) => {
     setPanelStates((prev) => {
       const newStates = { ...prev, [panelId]: open };
 
-      // 保存到 localStorage
+      // Save to localStorage
       if (typeof window !== "undefined") {
         try {
           const panelStateKey = storageKeys.PanelState(route, method);
           localStorage.setItem(panelStateKey, JSON.stringify(newStates));
         } catch {
-          // 忽略存储错误
+          // Ignore storage errors
         }
       }
 
@@ -261,8 +261,8 @@ export default function PlaygroundClient({
   });
 
   const defaultValues: FormValues = useMemo(() => {
-    // 在 SSR 阶段，直接使用示例数据
-    // localStorage 只在客户端可用
+    // In SSR phase, directly use example data
+    // localStorage is only available on client
     if (typeof window === "undefined") {
       const requestData = examples.find(
         (example) => example.id === exampleId,
@@ -277,8 +277,8 @@ export default function PlaygroundClient({
       };
     }
 
-    // 客户端：从 localStorage 恢复表单数据
-    // 1. 先从公共存储恢复 header
+    // Client: restore form data from localStorage
+    // 1. First restore header from common storage
     let restoredHeader: Record<string, unknown> = {};
     try {
       const commonHeadersKey = storageKeys.CommonHeaders();
@@ -290,10 +290,10 @@ export default function PlaygroundClient({
         }
       }
     } catch {
-      // 如果解析失败，继续使用示例数据
+      // If parsing fails, continue using example data
     }
 
-    // 2. 从接口特定存储恢复其他字段（path, query, body, cookie）
+    // 2. Restore other fields from API-specific storage (path, query, body, cookie)
     const apiStorageKey = storageKeys.ApiForm(route, method);
     const storedData = localStorage.getItem(apiStorageKey);
     let restoredData: Partial<FormValues> = {};
@@ -301,7 +301,7 @@ export default function PlaygroundClient({
     if (storedData) {
       try {
         const parsed = JSON.parse(storedData);
-        // 验证数据结构是否正确
+        // Validate data structure is correct
         if (
           parsed &&
           typeof parsed === "object" &&
@@ -318,11 +318,11 @@ export default function PlaygroundClient({
           };
         }
       } catch {
-        // 如果解析失败，继续使用示例数据
+        // If parsing fails, continue using example data
       }
     }
 
-    // 3. 合并恢复的数据和示例数据
+    // 3. Merge restored data and example data
     const requestData = examples.find(
       (example) => example.id === exampleId,
     )?.data;
@@ -372,13 +372,13 @@ export default function PlaygroundClient({
     );
   });
 
-  // 在客户端挂载后从 localStorage 恢复响应数据
+  // Restore response data from localStorage after client mount
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
 
-    // 只在没有现有数据时恢复
+    // Only restore if no existing data
     if (testQuery.data) {
       return;
     }
@@ -388,7 +388,7 @@ export default function PlaygroundClient({
       const stored = localStorage.getItem(responseKey);
       if (stored) {
         const parsed = JSON.parse(stored);
-        // 验证数据结构是否正确
+        // Validate data structure is correct
         if (
           parsed &&
           typeof parsed === "object" &&
@@ -400,14 +400,14 @@ export default function PlaygroundClient({
         }
       }
     } catch {
-      // 如果解析失败，忽略
+      // If parsing fails, ignore
     }
   }, [route, method, storageKeys, testQuery.data, testQuery.setData]);
 
   const onUpdateDebounced = useEffectEvent((values: FormValues) => {
-    // 只在客户端环境中保存到 localStorage
+    // Only save to localStorage in client environment
     if (typeof window !== "undefined") {
-      // 保存认证字段
+      // Save auth fields
       for (const item of inputs) {
         const value = get(values, item.fieldName);
 
@@ -418,21 +418,21 @@ export default function PlaygroundClient({
               JSON.stringify(value),
             );
           } catch {
-            // 忽略 localStorage 写入错误（如存储空间已满）
+            // Ignore localStorage write errors (e.g., storage full)
           }
         }
       }
 
-      // 保存 header 到公共存储（所有接口共享）
+      // Save header to common storage (shared by all APIs)
       try {
         const commonHeadersKey = storageKeys.CommonHeaders();
         const headersToStore = values.header ?? {};
         localStorage.setItem(commonHeadersKey, JSON.stringify(headersToStore));
       } catch {
-        // 忽略 localStorage 写入错误（如存储空间已满）
+        // Ignore localStorage write errors (e.g., storage full)
       }
 
-      // 保存其他字段（path, query, body, cookie）到接口特定存储
+      // Save other fields (path, query, body, cookie) to API-specific storage
       try {
         const apiStorageKey = storageKeys.ApiForm(route, method);
         const formDataToStore = {
@@ -443,7 +443,7 @@ export default function PlaygroundClient({
         };
         localStorage.setItem(apiStorageKey, JSON.stringify(formDataToStore));
       } catch {
-        // 忽略 localStorage 写入错误（如存储空间已满）
+        // Ignore localStorage write errors (e.g., storage full)
       }
     }
 
@@ -566,13 +566,13 @@ export default function PlaygroundClient({
                 data={testQuery.data}
                 reset={() => {
                   testQuery.reset();
-                  // 清除 localStorage 中的响应数据
+                  // Clear response data from localStorage
                   if (typeof window !== "undefined") {
                     try {
                       const responseKey = storageKeys.Response(route, method);
                       localStorage.removeItem(responseKey);
                     } catch {
-                      // 忽略错误
+                      // Ignore errors
                     }
                   }
                 }}

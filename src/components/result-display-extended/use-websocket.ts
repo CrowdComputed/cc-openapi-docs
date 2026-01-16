@@ -14,7 +14,7 @@ interface UseWebSocketOptions {
 }
 
 /**
- * WebSocket 连接和管理 hook
+ * WebSocket connection and management hook
  */
 export function useWebSocket({
   websocketUrl,
@@ -37,7 +37,7 @@ export function useWebSocket({
   const pingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastStatusRef = useRef<Data["status"] | undefined>(undefined);
 
-  // 保持 taskId 和 getApiConfig 的最新引用
+  // Keep the latest references to taskId and getApiConfig
   useEffect(() => {
     taskIdRef.current = taskId;
   }, [taskId]);
@@ -46,7 +46,7 @@ export function useWebSocket({
     getApiConfigRef.current = getApiConfig;
   }, [getApiConfig]);
 
-  // 保持 onMessage 回调的最新引用
+  // Keep the latest reference to onMessage callback
   useEffect(() => {
     onMessageRef.current = onMessage;
   }, [onMessage]);
@@ -56,19 +56,19 @@ export function useWebSocket({
       return;
     }
 
-    // 如果已经有连接，先关闭
+    // Close existing connection if any
     if (wsRef.current) {
       wsRef.current.close();
       wsRef.current = null;
     }
 
-    // 使用局部变量捕获 ref，避免 lint 警告
+    // Use local variables to capture refs, avoiding lint warnings
     const containerRef = messagesContainerRef;
     const countRef = messagesCountRef;
     const messagesArrayRef = messagesRef;
     const statusElementRef = statusRef;
 
-    // 更新 WebSocket 状态的函数
+    // Function to update WebSocket status
     const updateStatus = (
       status: string,
       color: string = "text-fd-foreground",
@@ -79,17 +79,17 @@ export function useWebSocket({
       }
     };
 
-    // HTTP 查询任务状态函数（只调用一次）
+    // HTTP function to query task status (called only once)
     const queryTaskStatus = async () => {
       if (!taskIdRef.current) {
         return;
       }
 
-      // 添加 HTTP 查询日志
+      // Add HTTP query log
       if (containerRef.current) {
         const logElement = createLogElement(
           "http",
-          "查询任务状态",
+          "Query task status",
           Date.now(),
           { taskId: taskIdRef.current },
         );
@@ -102,7 +102,7 @@ export function useWebSocket({
         } as Data & { timestamp: number });
 
         if (countRef.current) {
-          countRef.current.textContent = `日志 (${messagesArrayRef.current.length})`;
+          countRef.current.textContent = `Logs (${messagesArrayRef.current.length})`;
         }
       }
 
@@ -130,14 +130,14 @@ export function useWebSocket({
         if (rootData && rootData.code === "Success") {
           const message = rootData.data;
 
-          // 存储消息并添加日志
+          // Store message and add log
           const dataWithTimestamp = {
             ...message,
             timestamp: Date.now(),
           };
           messagesArrayRef.current.push(dataWithTimestamp);
 
-          // 添加消息日志
+          // Add message log
           if (containerRef.current) {
             const messageElement = createMessageLogElement(dataWithTimestamp);
             containerRef.current.insertBefore(
@@ -146,21 +146,21 @@ export function useWebSocket({
             );
 
             if (countRef.current) {
-              countRef.current.textContent = `日志 (${messagesArrayRef.current.length})`;
+              countRef.current.textContent = `Logs (${messagesArrayRef.current.length})`;
             }
           }
 
-          // 调用回调函数
+          // Call callback function
           onMessageRef.current(message);
         }
       } catch (error) {
         console.error("Failed to query task status:", error);
 
-        // 添加错误日志
+        // Add error log
         if (containerRef.current) {
           const logElement = createLogElement(
             "http",
-            "查询任务状态失败",
+            "Failed to query task status",
             Date.now(),
             { error: String(error) },
           );
@@ -173,13 +173,13 @@ export function useWebSocket({
           } as Data & { timestamp: number });
 
           if (countRef.current) {
-            countRef.current.textContent = `日志 (${messagesArrayRef.current.length})`;
+            countRef.current.textContent = `Logs (${messagesArrayRef.current.length})`;
           }
         }
       }
     };
 
-    // 创建日志条目的函数（统一格式）
+    // Function to create log entry (unified format)
     const createLogElement = (
       type: "status" | "message" | "http" | "WS",
       content: string,
@@ -221,7 +221,7 @@ export function useWebSocket({
       return div;
     };
 
-    // 创建消息日志条目的函数
+    // Function to create message log entry
     const createMessageLogElement = (
       msg: Data & { timestamp: number },
     ): HTMLDivElement => {
@@ -239,7 +239,7 @@ export function useWebSocket({
         fractionalSecondDigits: 3,
       });
 
-      // 格式化 JSON 数据，转义 HTML 特殊字符
+      // Format JSON data, escape HTML special characters
       const jsonStr = JSON.stringify(msg, null, 2)
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
@@ -247,10 +247,10 @@ export function useWebSocket({
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#39;");
 
-      // 创建唯一 ID 用于 hover card
+      // Create unique ID for hover card
       const hoverCardId = `hover-card-${msg.timestamp}`;
 
-      // 创建图标 SVG（使用 FileText 图标）
+      // Create icon SVG (using FileText icon)
       const iconSvg = `
         <svg 
           class="w-4 h-4 text-fd-muted-foreground hover:text-fd-foreground cursor-help transition-colors" 
@@ -267,7 +267,7 @@ export function useWebSocket({
         <div class="flex items-center gap-2 flex-1">
           <span class="font-semibold text-fd-foreground">[MESSAGE]</span>
           <span class="text-fd-muted-foreground">${timeStr}</span>
-          <span class="text-fd-foreground">任务状态: ${msg.status || "unknown"}</span>
+          <span class="text-fd-foreground">Task Status: ${msg.status || "unknown"}</span>
         </div>
         <div class="relative group">
           ${iconSvg}
@@ -282,11 +282,11 @@ export function useWebSocket({
 
     const connectWebSocket = () => {
       try {
-        updateStatus("连接中...", "text-fd-muted-foreground");
+        updateStatus("Connecting...", "text-fd-muted-foreground");
 
-        // 添加开始连接日志
+        // Add connection start log
         if (containerRef.current) {
-          const logElement = createLogElement("WS", "开始连接", Date.now(), {
+          const logElement = createLogElement("WS", "Connecting", Date.now(), {
             url: websocketUrl,
           });
           containerRef.current.insertBefore(
@@ -298,7 +298,7 @@ export function useWebSocket({
           } as Data & { timestamp: number });
 
           if (countRef.current) {
-            countRef.current.textContent = `日志 (${messagesArrayRef.current.length})`;
+            countRef.current.textContent = `Logs (${messagesArrayRef.current.length})`;
           }
         }
 
@@ -311,20 +311,20 @@ export function useWebSocket({
             clearInterval(pingTimer.current);
           }
 
-          updateStatus("已连接", "text-green-600");
+          updateStatus("Connected", "text-green-600");
 
-          // 每 5 秒发送一次 ping
+          // Send ping every 5 seconds
           pingTimer.current = setInterval(() => {
             if (ws && ws.readyState === WebSocket.OPEN) {
               ws.send("ping");
             }
           }, 5000);
 
-          // 添加连接成功的日志
+          // Add connection success log
           if (containerRef.current) {
             const logElement = createLogElement(
               "WS",
-              "连接已建立",
+              "Connection established",
               Date.now(),
               { url: websocketUrl },
             );
@@ -337,7 +337,7 @@ export function useWebSocket({
             } as Data & { timestamp: number });
 
             if (countRef.current) {
-              countRef.current.textContent = `日志 (${messagesArrayRef.current.length})`;
+              countRef.current.textContent = `Logs (${messagesArrayRef.current.length})`;
             }
           }
         };
@@ -345,16 +345,16 @@ export function useWebSocket({
         ws.onmessage = (event) => {
           try {
             const message = JSON.parse(event.data) as Data;
-            // 更新最后收到的状态
+            // Update last received status
             lastStatusRef.current = message.status;
-            // 存储消息到 ref，只存储 Data 部分，添加时间戳作为 key
+            // Store message to ref, only store Data part, add timestamp as key
             const dataWithTimestamp = {
               ...message,
               timestamp: Date.now(),
             };
             messagesArrayRef.current.push(dataWithTimestamp);
 
-            // 直接操作 DOM 添加消息日志
+            // Directly manipulate DOM to add message log
             if (containerRef.current) {
               const messageElement = createMessageLogElement(dataWithTimestamp);
               containerRef.current.insertBefore(
@@ -362,13 +362,13 @@ export function useWebSocket({
                 containerRef.current.firstChild,
               );
 
-              // 更新日志计数
+              // Update log count
               if (countRef.current) {
-                countRef.current.textContent = `日志 (${messagesArrayRef.current.length})`;
+                countRef.current.textContent = `Logs (${messagesArrayRef.current.length})`;
               }
             }
 
-            // 调用回调函数（使用 ref 避免依赖问题）
+            // Call callback function (using ref to avoid dependency issues)
             onMessageRef.current(message);
           } catch (error) {
             console.error("Failed to parse WebSocket message:", error);
@@ -378,13 +378,18 @@ export function useWebSocket({
         ws.onerror = (error) => {
           console.error("WebSocket error:", error);
 
-          updateStatus("连接失败", "text-red-600");
+          updateStatus("Connection failed", "text-red-600");
 
-          // 添加错误日志
+          // Add error log
           if (containerRef.current) {
-            const logElement = createLogElement("WS", "连接错误", Date.now(), {
-              error: String(error),
-            });
+            const logElement = createLogElement(
+              "WS",
+              "Connection error",
+              Date.now(),
+              {
+                error: String(error),
+              },
+            );
             containerRef.current.insertBefore(
               logElement,
               containerRef.current.firstChild,
@@ -394,7 +399,7 @@ export function useWebSocket({
             } as Data & { timestamp: number });
 
             if (countRef.current) {
-              countRef.current.textContent = `日志 (${messagesArrayRef.current.length})`;
+              countRef.current.textContent = `Logs (${messagesArrayRef.current.length})`;
             }
           }
         };
@@ -407,13 +412,13 @@ export function useWebSocket({
             pingTimer.current = null;
           }
 
-          updateStatus("连接已关闭", "text-fd-muted-foreground");
+          updateStatus("Connection closed", "text-fd-muted-foreground");
 
-          // 添加关闭日志
+          // Add close log
           if (containerRef.current) {
             const logElement = createLogElement(
               "WS",
-              "连接已关闭",
+              "Connection closed",
               Date.now(),
               {
                 code: event.code,
@@ -430,12 +435,12 @@ export function useWebSocket({
             } as Data & { timestamp: number });
 
             if (countRef.current) {
-              countRef.current.textContent = `日志 (${messagesArrayRef.current.length})`;
+              countRef.current.textContent = `Logs (${messagesArrayRef.current.length})`;
             }
           }
 
-          // WebSocket 关闭后，如果任务没有完成，调用一次 HTTP 接口获取任务状态
-          // 只有当状态不是 "finished" 或 "failed" 时才需要查询
+          // After WebSocket closes, if task is not completed, call HTTP API once to get task status
+          // Only query if status is not "finished" or "failed"
           if (
             taskIdRef.current &&
             enabled &&
@@ -464,9 +469,6 @@ export function useWebSocket({
         wsRef.current = null;
       }
     };
-    // ref 对象本身是稳定的，但为了满足 lint 规则，将它们添加到依赖数组
-    // 实际上这些 ref 对象在组件生命周期内不会变化
-    // taskId 通过 taskIdRef 访问，不需要作为依赖
   }, [
     enabled,
     websocketUrl,

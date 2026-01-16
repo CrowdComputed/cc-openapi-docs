@@ -7,16 +7,16 @@ const __dirname = path.dirname(__filename);
 
 const i18nDir = path.join(__dirname, "../message");
 
-// 读取目录中的所有 JSON 文件
+// Read all JSON files in directory
 const files = fs.readdirSync(i18nDir).filter((file) => file.endsWith(".json"));
 
 files.forEach((file) => {
   const filePath = path.join(i18nDir, file);
-  // 读取 JSON 文件
+  // Read JSON file
   const content = fs.readFileSync(filePath, "utf8");
-  // 解析并重新序列化（这会移除所有空格和格式化）
+  // Parse and re-serialize (this removes all whitespace and formatting)
   const minified = JSON.stringify(JSON.parse(content));
-  // 写回文件
+  // Write back to file
   fs.writeFileSync(filePath, minified);
   console.log(`Minified ${file}`);
 });

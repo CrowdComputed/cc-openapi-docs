@@ -16,7 +16,7 @@ interface PreviewDialogProps {
 }
 
 /**
- * 媒体预览对话框组件
+ * Media preview dialog component
  */
 export function PreviewDialog({
   open,

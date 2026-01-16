@@ -1,7 +1,7 @@
 import type { MediaType } from "./types";
 
 /**
- * 根据 URL 后缀判断媒体类型
+ * Determine media type based on URL extension
  */
 export function getMediaType(url: string): MediaType {
   try {
@@ -9,7 +9,7 @@ export function getMediaType(url: string): MediaType {
     const pathname = urlObj.pathname.toLowerCase();
     const extension = pathname.split(".").pop()?.split("?")[0] || "";
 
-    // 图片类型
+    // Image types
     const imageExtensions = [
       "jpg",
       "jpeg",
@@ -25,7 +25,7 @@ export function getMediaType(url: string): MediaType {
       return "image";
     }
 
-    // 视频类型
+    // Video types
     const videoExtensions = [
       "mp4",
       "webm",
@@ -41,7 +41,7 @@ export function getMediaType(url: string): MediaType {
       return "video";
     }
 
-    // 音频类型
+    // Audio types
     const audioExtensions = ["mp3", "wav", "ogg", "m4a", "aac", "flac", "wma"];
     if (audioExtensions.includes(extension)) {
       return "audio";
@@ -49,7 +49,7 @@ export function getMediaType(url: string): MediaType {
 
     return "other";
   } catch {
-    // 如果 URL 解析失败，尝试从路径判断
+    // If URL parsing fails, try to determine from path
     const pathname = url.toLowerCase();
     const extension = pathname.split(".").pop()?.split("?")[0] || "";
 
@@ -93,7 +93,7 @@ export function getMediaType(url: string): MediaType {
 }
 
 /**
- * 格式化倒计时时间
+ * Format countdown time
  */
 export function formatRemainingTime(ms: number): string {
   const seconds = Math.floor(ms / 1000);

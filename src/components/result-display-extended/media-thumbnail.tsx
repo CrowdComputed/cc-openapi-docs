@@ -8,7 +8,7 @@ interface MediaThumbnailProps {
 }
 
 /**
- * 媒体缩略图组件
+ * Media thumbnail component
  */
 export function MediaThumbnail({ url, index }: MediaThumbnailProps) {
   const mediaType = getMediaType(url);
@@ -69,7 +69,7 @@ export function MediaThumbnail({ url, index }: MediaThumbnailProps) {
                 d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
               />
             </svg>
-            <p className="mt-2 text-sm text-fd-muted-foreground">音频</p>
+            <p className="mt-2 text-sm text-fd-muted-foreground">Audio</p>
           </div>
         </div>
       );
@@ -92,7 +92,7 @@ export function MediaThumbnail({ url, index }: MediaThumbnailProps) {
                 d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
               />
             </svg>
-            <p className="mt-2 text-sm text-fd-muted-foreground">文件</p>
+            <p className="mt-2 text-sm text-fd-muted-foreground">File</p>
           </div>
         </div>
       );

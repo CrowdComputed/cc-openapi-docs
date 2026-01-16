@@ -9,10 +9,10 @@ type SchemaMap = Record<
 
 export const openapi = createOpenAPI({
   async input(): Promise<SchemaMap> {
-    // 获取所有支持的语言
+    // Get all supported languages
     const languages = i18n.languages;
 
-    // 并行获取所有语言的 OpenAPI 文档
+    // Fetch OpenAPI documents for all languages in parallel
     const schemas = await Promise.all(
       languages.map(async (lang) => {
         const jsonDoc = await fetch(
@@ -23,7 +23,7 @@ export const openapi = createOpenAPI({
       }),
     );
 
-    // 返回以语言为 key 的 schema map
+    // Return schema map with language as key
     const result: Record<
       string,
       string | OpenAPIV3_1.Document | OpenAPIV3.Document
@@ -32,7 +32,7 @@ export const openapi = createOpenAPI({
       result[`v1-${lang}`] = doc as OpenAPIV3_1.Document | OpenAPIV3.Document;
     }
 
-    // 为了向后兼容，也保留默认的 v1（使用默认语言）
+    // For backward compatibility, also keep default v1 (using default language)
     const defaultDoc = schemas.find(
       (s) => s.lang === i18n.defaultLanguage,
     )?.doc;

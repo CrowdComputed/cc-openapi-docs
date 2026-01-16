@@ -20,14 +20,14 @@ async function generate() {
     },
   });
 
-  // 为每种语言生成文档，使用文件命名方式（xxx.mdx, xxx.zh.mdx）
+  // Generate docs for each language using file naming (xxx.mdx, xxx.zh.mdx)
   for (const lang of i18n.languages) {
     const schemaId = `v1-${lang}`;
 
-    // 为当前语言创建独立的 openapi 实例，只包含当前语言的 schema
+    // Create isolated openapi instance for current language, only containing current language's schema
     const langOpenAPI = createOpenAPI({
       async input(): Promise<SchemaMap> {
-        // 只获取当前语言的 OpenAPI 文档
+        // Only fetch OpenAPI document for current language
         const jsonDoc = await fetch(
           `https://api.crowdcomputed.cc/api/workflow/openapi/all?language=${lang}`,
         ).then((res) => res.json());
@@ -36,14 +36,14 @@ async function generate() {
           [schemaId]: jsonDoc as OpenAPIV3_1.Document | OpenAPIV3.Document,
         };
       },
-      disableCache: true, // 禁用缓存，确保每次都是最新的
+      disableCache: true, // Disable cache to ensure fresh data each time
     });
 
     await OpenAPI.generateFiles({
       input: langOpenAPI,
-      output: out, // 所有语言的文件都生成到同一个目录
+      output: out, // All language files are generated to the same directory
       beforeWrite(files: OutputFile[]) {
-        // 移除 api/v1-{lang}/ 前缀（如果有的话）
+        // Remove api/v1-{lang}/ prefix if present
         files.forEach((file) => {
           if (file.path.startsWith(`api/${schemaId}/`)) {
             file.path = file.path.replace(new RegExp(`^api/${schemaId}/`), "");
@@ -51,10 +51,10 @@ async function generate() {
             file.path = file.path.replace(/^api\/v1\//, "");
           }
 
-          // 如果不是默认语言，在文件名后添加语言后缀
-          // 例如：post.mdx -> post.zh.mdx
+          // If not default language, add language suffix to filename
+          // Example: post.mdx -> post.zh.mdx
           if (lang !== i18n.defaultLanguage) {
-            // 匹配文件名，例如：generate/ai-image-editing/post.mdx
+            // Match filename, e.g., generate/ai-image-editing/post.mdx
             file.path = file.path.replace(/(\/[^/]+)\.mdx$/, `$1.${lang}.mdx`);
           }
         });

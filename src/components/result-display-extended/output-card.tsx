@@ -13,7 +13,7 @@ interface OutputCardProps {
 }
 
 /**
- * 输出卡片组件
+ * Output card component
  */
 export function OutputCard({
   output,
@@ -26,7 +26,7 @@ export function OutputCard({
   const hasUrls = urls && urls.length > 0;
 
   if (status === "finished" && hasUrls && urls) {
-    // 已完成：显示媒体
+    // Finished: display media
     return (
       <div key={outputId} className="space-y-2">
         {urls.map((url, urlIndex) => (
@@ -49,7 +49,7 @@ export function OutputCard({
     );
   }
 
-  // 其他状态：显示占位卡片
+  // Other statuses: display placeholder card
   return (
     <div
       key={outputId}
@@ -59,19 +59,19 @@ export function OutputCard({
         {status === "generating" && (
           <>
             {startTime === 0 ? (
-              // 显示队列号
+              // Display queue number
               <>
                 <Loader2 className="w-8 h-8 mx-auto animate-spin text-fd-primary" />
-                <p className="text-sm font-medium">队列中</p>
+                <p className="text-sm font-medium">In Queue</p>
                 <p className="text-xs text-fd-muted-foreground">
-                  队列号: {queueOrder}
+                  Queue: {queueOrder}
                 </p>
               </>
             ) : (
-              // 显示倒计时
+              // Display countdown
               <>
                 <Loader2 className="w-8 h-8 mx-auto animate-spin text-fd-primary" />
-                <p className="text-sm font-medium">生成中</p>
+                <p className="text-sm font-medium">Generating</p>
                 {remainingTime[outputId] !== undefined && (
                   <p className="text-xs text-fd-muted-foreground font-mono">
                     {formatRemainingTime(remainingTime[outputId])}
@@ -85,17 +85,19 @@ export function OutputCard({
           <>
             <Loader2 className="w-8 h-8 mx-auto animate-spin text-fd-muted-foreground" />
             <p className="text-sm font-medium text-fd-muted-foreground">
-              等待中
+              Waiting
             </p>
             <p className="text-xs text-fd-muted-foreground">
-              队列号: {queueOrder}
+              Queue: {queueOrder}
             </p>
           </>
         )}
         {status === "failed" && (
           <>
             <XCircle className="w-8 h-8 mx-auto text-fd-destructive" />
-            <p className="text-sm font-medium text-fd-destructive">生成失败</p>
+            <p className="text-sm font-medium text-fd-destructive">
+              Generation failed
+            </p>
           </>
         )}
       </div>
