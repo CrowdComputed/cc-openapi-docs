@@ -130,7 +130,7 @@ export function ResultDisplayExtended({
   // WebSocket 连接
   useWebSocket({
     websocketUrl: currentData?.data.websocket,
-    enabled: currentData?.data.status === "generating",
+    enabled: ["generating", "waiting"].includes(currentData?.data.status ?? ""),
     taskId: currentData?.data.taskId,
     getApiConfig,
     onMessage: (message) => {
