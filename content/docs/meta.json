@@ -5,7 +5,7 @@
   "root": true,
   "pages": [
     "---Introduction---",
-    "quick-start",
+    "index",
     "welcome",
     "pricing",
     "---Documentation---",
