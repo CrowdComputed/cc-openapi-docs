@@ -244,7 +244,7 @@ export function createAutoPreset(
       }
 
       for (const op of items.operations) {
-        const { pathItem, operation, displayName } =
+        const { pathItem, operation, displayName, index } =
           builder.fromExtractedOperation(op)!;
 
         const entry: OperationOutput = {
@@ -256,6 +256,7 @@ export function createAutoPreset(
             title: displayName,
             description: operation.description ?? pathItem.description,
           },
+          index,
         };
 
         for (const outputPath of groupOutput(builder, entry)) {

@@ -11,9 +11,11 @@ export default async function Layout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const tree = source.getPageTree(locale);
+  console.log("tree", tree);
   return (
     <DocsLayout
-      tree={source.getPageTree(locale)}
+      tree={tree}
       {...baseOptions(locale)}
       sidebar={{
         collapsible: false, // Disable sidebar collapse

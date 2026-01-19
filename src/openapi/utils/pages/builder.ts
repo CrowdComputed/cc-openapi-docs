@@ -22,6 +22,7 @@ interface BaseEntry {
     title: string;
     description?: string;
   };
+  index?: number;
 }
 
 export interface OperationOutput extends BaseEntry {
@@ -125,7 +126,16 @@ export async function fromServer(
   }
 
   for (const [id, schema] of entries) {
-    generated[id] = fromSchema(id, schema, config);
+    const list = fromSchema(id, schema, config);
+
+    // Sort entries by index (stored in entry.index)
+    const sortedList = [...list].sort((a, b) => {
+      const indexA = a.index ?? Infinity;
+      const indexB = b.index ?? Infinity;
+      return indexA - indexB;
+    });
+
+    generated[id] = sortedList;
   }
 
   return generated;
@@ -180,6 +190,7 @@ export function fromSchema(
       return {
         pathItem,
         operation,
+        index: (operation as OperationObject & { index?: number })?.index,
         get displayName() {
           return (
             operation.summary ||
