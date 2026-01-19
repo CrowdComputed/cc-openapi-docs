@@ -49,7 +49,7 @@ export default async function Page(props: PageProps<"/[locale]/[[...slug]]">) {
   // Check if page has body property (MDX pages have body, OpenAPI pages don't)
   if ("body" in page.data) {
     const MDX = page.data.body;
-    const full =
+    const full: boolean =
       "full" in page.data && typeof page.data.full === "boolean"
         ? page.data.full
         : false;
@@ -99,7 +99,7 @@ export default async function Page(props: PageProps<"/[locale]/[[...slug]]">) {
   }
 
   // Fallback for pages without body
-  const full =
+  const full: boolean =
     "full" in page.data && typeof page.data.full === "boolean"
       ? page.data.full
       : false;
