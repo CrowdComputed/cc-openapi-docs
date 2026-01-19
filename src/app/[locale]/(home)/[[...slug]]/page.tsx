@@ -46,46 +46,77 @@ export default async function Page(props: PageProps<"/[locale]/[[...slug]]">) {
   }
 
   // Regular MDX page
-  const MDX = page.data.body;
-  if (!MDX) {
+  // Check if page has body property (MDX pages have body, OpenAPI pages don't)
+  if ("body" in page.data) {
+    const MDX = page.data.body;
+    const full =
+      "full" in page.data && typeof page.data.full === "boolean"
+        ? page.data.full
+        : false;
+
+    if (!MDX) {
+      return (
+        <DocsPage
+          toc={page.data.toc}
+          tableOfContent={{
+            style: "clerk",
+          }}
+          full={full}
+        >
+          <DocsTitle>{page.data.title}</DocsTitle>
+          <DocsDescription className="mb-0">
+            {page.data.description}
+          </DocsDescription>
+          <DocsBody>
+            <p>No content available.</p>
+          </DocsBody>
+        </DocsPage>
+      );
+    }
+
     return (
       <DocsPage
         toc={page.data.toc}
         tableOfContent={{
           style: "clerk",
         }}
-        full={page.data.full}
+        full={full}
       >
         <DocsTitle>{page.data.title}</DocsTitle>
         <DocsDescription className="mb-0">
           {page.data.description}
         </DocsDescription>
         <DocsBody>
-          <p>No content available.</p>
+          <MDX
+            components={getMDXComponents({
+              // this allows you to link to other pages with relative file paths
+              a: createRelativeLink(source, page),
+            })}
+          />
         </DocsBody>
       </DocsPage>
     );
   }
 
+  // Fallback for pages without body
+  const full =
+    "full" in page.data && typeof page.data.full === "boolean"
+      ? page.data.full
+      : false;
   return (
     <DocsPage
       toc={page.data.toc}
       tableOfContent={{
         style: "clerk",
       }}
-      full={page.data.full}
+      full={full}
     >
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription className="mb-0">
         {page.data.description}
       </DocsDescription>
       <DocsBody>
-        <MDX
-          components={getMDXComponents({
-            // this allows you to link to other pages with relative file paths
-            a: createRelativeLink(source, page),
-          })}
-        />
+        <p>No content available.</p>
       </DocsBody>
     </DocsPage>
   );
