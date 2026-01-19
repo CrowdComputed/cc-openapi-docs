@@ -11,14 +11,8 @@ const inter = Inter({
 
 const { provider } = defineI18nUI(i18n, {
   translations: {
-    en: (await import(`../../../message/en.json`))
-      .default as unknown as Partial<Translations> & {
-      displayName?: string;
-    },
-    zh: (await import(`../../../message/zh.json`))
-      .default as unknown as Partial<Translations> & {
-      displayName?: string;
-    },
+    en: {},
+    zh: {},
   },
 });
 

@@ -117,27 +117,3 @@ jobs:
           host: ${{ vars.ECS_HOST }}
           user: ${{ vars.ECS_USER }}
           pass: ${{ secrets.ECS_PASSWORD }}
-
-      - name: Notify Failure to Discord Channel
-        if: failure()
-        uses: Ilshidur/action-discord@master
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_DEPLOY_WEBHOOK }}
-        with:
-          args: |
-            ❌ Deployment failed for version ${{ vars.APP_NAME }}:${{ github.ref_name }}
-            Branch: ${{ github.ref }}
-            Commit: ${{ github.sha }}
-            Workflow: ${{ github.workflow }}
-
-      - name: Notify Success to Discord Channel
-        if: success()
-        uses: Ilshidur/action-discord@master
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_DEPLOY_WEBHOOK }}
-        with:
-          args: |
-            ✅ Deployment successful for version ${{ vars.APP_NAME }}:${{ github.ref_name }}
-            Branch: ${{ github.ref }}
-            Commit: ${{ github.sha }}
-            Environment: Development
