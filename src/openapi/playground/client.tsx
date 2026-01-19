@@ -185,7 +185,7 @@ export default function PlaygroundClient({
           ResultDisplay = DefaultResultDisplay,
           ResultDisplayExtended,
         } = {},
-        requestTimeout = 10,
+        requestTimeout = 60 * 20,
         transformAuthInputs,
       } = {},
     },

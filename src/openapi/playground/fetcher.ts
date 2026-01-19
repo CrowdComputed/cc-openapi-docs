@@ -73,6 +73,7 @@ export function createBrowserFetcher(
         document.cookie = segs.join("; ");
       }
 
+
       return fetch(url, {
         method: options.method,
         cache: "no-cache",
