@@ -4,10 +4,12 @@ import {
   DocsPage,
   DocsTitle,
 } from "fumadocs-ui/layouts/docs/page";
+import { createRelativeLink } from "fumadocs-ui/mdx";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { openapi } from "@/lib/openapi";
 import { getPageImage, source } from "@/lib/source";
+import { getMDXComponents } from "@/mdx-components";
 import { createAPIPage } from "@/openapi/ui/api-page";
 
 export default async function Page(props: PageProps<"/[locale]/[[...slug]]">) {
@@ -43,7 +45,50 @@ export default async function Page(props: PageProps<"/[locale]/[[...slug]]">) {
     );
   }
 
-  return null;
+  // Regular MDX page
+  const MDX = page.data.body;
+  if (!MDX) {
+    return (
+      <DocsPage
+        toc={page.data.toc}
+        tableOfContent={{
+          style: "clerk",
+        }}
+        full={page.data.full}
+      >
+        <DocsTitle>{page.data.title}</DocsTitle>
+        <DocsDescription className="mb-0">
+          {page.data.description}
+        </DocsDescription>
+        <DocsBody>
+          <p>No content available.</p>
+        </DocsBody>
+      </DocsPage>
+    );
+  }
+
+  return (
+    <DocsPage
+      toc={page.data.toc}
+      tableOfContent={{
+        style: "clerk",
+      }}
+      full={page.data.full}
+    >
+      <DocsTitle>{page.data.title}</DocsTitle>
+      <DocsDescription className="mb-0">
+        {page.data.description}
+      </DocsDescription>
+      <DocsBody>
+        <MDX
+          components={getMDXComponents({
+            // this allows you to link to other pages with relative file paths
+            a: createRelativeLink(source, page),
+          })}
+        />
+      </DocsBody>
+    </DocsPage>
+  );
 }
 
 export async function generateStaticParams() {

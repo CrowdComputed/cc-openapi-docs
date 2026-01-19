@@ -6,7 +6,6 @@ export default defineClientConfig({
   storageKeyPrefix: "cc-api-docs-",
   playground: {
     transformAuthInputs: (inputs) => {
-      console.log(inputs);
       return inputs;
     },
     requestTimeout: 60 * 20,

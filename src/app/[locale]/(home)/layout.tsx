@@ -12,7 +12,6 @@ export default async function Layout({
 }) {
   const { locale } = await params;
   const tree = source.getPageTree(locale);
-  console.log("tree", tree);
   return (
     <DocsLayout
       tree={tree}
