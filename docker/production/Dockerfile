@@ -19,4 +19,4 @@ RUN mkdir -p .next/cache && chown -R node:node .next
 USER node
 EXPOSE 3000
 
-CMD ["pm2-runtime", "server.js", "-i", "max", "--name", "cc-web", "--merge-logs", "--no-daemon", "--kill-timeout", "5000", "--listen-timeout", "3000"]
+CMD ["pm2-runtime", "server.js", "-i", "max", "--name", "cc-openapi-docs", "--merge-logs", "--no-daemon", "--kill-timeout", "5000", "--listen-timeout", "3000"]

@@ -1,9 +1,9 @@
 services:
-  cc-web:
+  cc-openapi-docs:
     build:
       context: ../../
       dockerfile: docker/production/Dockerfile
-    image: cc-web
+    image: cc-openapi-docs
     ports:
       - "3005:3000"
     env_file:

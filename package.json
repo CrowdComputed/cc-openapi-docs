@@ -1,5 +1,5 @@
 {
-  "name": "cc-web",
+  "name": "cc-openapi-docs",
   "version": "0.0.0",
   "private": true,
   "packageManager": "pnpm@9.15.0",

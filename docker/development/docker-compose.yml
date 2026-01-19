@@ -1,8 +1,8 @@
 services:
-  cc-web:
+  cc-openapi-docs:
     build:
       context: ../../
       dockerfile: docker/development/Dockerfile
-    image: cc-web
+    image: cc-openapi-docs
     ports:
       - "3005:3000"
