@@ -67,9 +67,6 @@ jobs:
           ALIMT_REGION_ID=cn-hongkong
           EOF
 
-      - name: Tolgee pull
-        run: pnpm tolgee:pull
-
       - name: Build Next.js (standalone)
         env:
           NODE_ENV: production

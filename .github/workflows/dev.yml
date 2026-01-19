@@ -67,8 +67,6 @@ jobs:
           ALIMT_ACCESS_KEY_SECRET=${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
           ALIMT_REGION_ID=cn-hongkong
           EOF
-      - name: Tolgee pull
-        run: pnpm tolgee:pull
 
       - name: Build Next.js (standalone)
         env:
