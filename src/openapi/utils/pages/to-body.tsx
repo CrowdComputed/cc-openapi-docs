@@ -42,7 +42,9 @@ export function toBody(
       sortedWebhooks = [...sortedWebhooks].sort((a, b) => {
         const pathItemA = dereferenced.webhooks?.[a.name];
         const pathItemB = dereferenced.webhooks?.[b.name];
+        // @ts-expect-error
         const operationA = pathItemA?.[a.method];
+        // @ts-expect-error
         const operationB = pathItemB?.[b.method];
         const indexA =
           (operationA as OperationObject & { index?: number })?.index ??

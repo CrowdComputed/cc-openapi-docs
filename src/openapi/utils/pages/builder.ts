@@ -93,6 +93,7 @@ export interface PagesBuilder {
         get displayName(): string;
         pathItem: NoReference<PathItemObject>;
         operation: NoReference<OperationObject>;
+        index?: number;
       }
     | undefined;
   fromTag: (tag: TagObject) => {
