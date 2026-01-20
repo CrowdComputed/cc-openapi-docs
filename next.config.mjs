@@ -16,6 +16,21 @@ const config = {
     ],
   },
 
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          // 仅允许特定可信网站嵌入
+          {
+            key: 'Content-Security-Policy',
+            value: "frame-ancestors 'self' https://crowdcomputed.cc https://crowdcomputed.com;"
+          }
+        ]
+      }
+    ];
+  }
+
   async rewrites() {
     return [
       {
