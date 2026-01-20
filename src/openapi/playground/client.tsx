@@ -7,6 +7,7 @@ import {
   CollapsibleTrigger,
 } from "fumadocs-ui/components/ui/collapsible";
 import { ChevronDown, LoaderCircle, X } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import {
   type ComponentProps,
   type FC,
@@ -173,6 +174,7 @@ export default function PlaygroundClient({
   readOnly,
   ...rest
 }: PlaygroundClientProps) {
+  const searchParams = useSearchParams();
   const { example: exampleId, examples, setExampleData } = useExampleRequests();
   const storageKeys = useStorageKey();
   const fieldInfoMap = useMemo(() => new Map<string, FieldInfo>(), []);
@@ -501,7 +503,98 @@ export default function PlaygroundClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- ignore other parts
   }, [inputs]);
 
+  // Auto-fill token from URL parameter (priority over localStorage)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const tokenFromUrl = searchParams.get("token");
+    if (tokenFromUrl) {
+      // Set token in Authorization header
+      const authField = "Authorization";
+
+      // URL token has priority, override existing value
+      form.setValue(`header.${authField}`, `Bearer ${tokenFromUrl}`, {
+        shouldDirty: false,
+      });
+    }
+  }, [searchParams, form]);
+
+  // Helper function to check if token exists
+  const hasToken = useEffectEvent((values: FormValues): boolean => {
+    const header = values.header || {};
+    const token = header.token || header.Token || header.TOKEN;
+    const auth =
+      header.Authorization || header.authorization || header.AUTHORIZATION;
+
+    if (token && typeof token === "string" && token.trim().length > 0) {
+      return true;
+    }
+    if (auth && typeof auth === "string" && auth.trim().length > 0) {
+      return true;
+    }
+
+    // Check if token is in object format (from form field)
+    if (
+      token &&
+      typeof token === "object" &&
+      "value" in token &&
+      typeof token.value === "string" &&
+      token.value.trim().length > 0
+    ) {
+      return true;
+    }
+    if (
+      auth &&
+      typeof auth === "object" &&
+      "value" in auth &&
+      typeof auth.value === "string" &&
+      auth.value.trim().length > 0
+    ) {
+      return true;
+    }
+
+    return false;
+  });
+
+  // Helper function to handle login
+  const handleLogin = useEffectEvent(() => {
+    if (typeof window === "undefined") return;
+
+    // Default login URL, can be configured via environment variable or context
+    const loginUrl =
+      process.env.NEXT_PUBLIC_LOGIN_URL || "https://crowdcomputed.com/login";
+
+    // Check if we're in an iframe
+    const isInIframe = window.parent !== window;
+
+    if (isInIframe) {
+      // Send message to parent window
+      try {
+        window.parent.postMessage(
+          {
+            type: "OPENAPI_LOGIN_REQUIRED",
+            source: "fumadocs-openapi-playground",
+          },
+          "*", // In production, you might want to specify the parent origin
+        );
+      } catch (error) {
+        console.error("Failed to send message to parent window:", error);
+        // Fallback to redirect
+        window.location.href = loginUrl;
+      }
+    } else {
+      // Not in iframe, redirect to login URL
+      window.location.href = loginUrl;
+    }
+  });
+
   const onSubmit = form.handleSubmit((value) => {
+    // Check if token exists before submitting
+    if (!hasToken(value)) {
+      handleLogin();
+      return;
+    }
+
     testQuery.start(mapInputs(value));
   });
 

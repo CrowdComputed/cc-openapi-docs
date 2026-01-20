@@ -29,7 +29,7 @@ async function generate() {
       async input(): Promise<SchemaMap> {
         // Only fetch OpenAPI document for current language
         const jsonDoc = await fetch(
-          `https://api.crowdcomputed.cc/api/workflow/openapi/all?language=${lang}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/workflow/openapi/all?language=${lang}`,
         ).then((res) => res.json());
 
         return {

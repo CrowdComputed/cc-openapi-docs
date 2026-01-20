@@ -60,11 +60,8 @@ jobs:
       - name: Generate .env file
         run: |
           cat > .env << EOF
-          NEXT_PUBLIC_TOLGEE_API_KEY=${{ secrets.TOLGEE_API_KEY }}
-          NEXT_PUBLIC_TOLGEE_API_URL=${{ vars.TOLGEE_API_URL }}
-          ALIMT_ACCESS_KEY_ID=${{ vars.ALIYUN_ACCESS_KEY_ID }}
-          ALIMT_ACCESS_KEY_SECRET=${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
-          ALIMT_REGION_ID=cn-hongkong
+          NEXT_PUBLIC_API_URL=https://api.crowdcomputed.com/
+          NEXT_PUBLIC_LOGIN_URL=https://crowdcomputed.com/login/
           EOF
 
       - name: Build Next.js (standalone)

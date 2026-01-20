@@ -25,7 +25,7 @@ const config = {
           {
             key: "Content-Security-Policy",
             value:
-              "frame-ancestors 'self' https://crowdcomputed.cc https://crowdcomputed.com;",
+              "frame-ancestors 'self' https://crowdcomputed.cc https://crowdcomputed.com http://localhost:3000;",
           },
         ],
       },

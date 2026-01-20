@@ -24,7 +24,7 @@ export async function createSource() {
       const schemas = await Promise.all(
         languages.map(async (lang) => {
           const jsonDoc = await fetch(
-            `https://api.crowdcomputed.cc/api/workflow/openapi/all?language=${lang}`,
+            `${process.env.NEXT_PUBLIC_API_URL}/api/workflow/openapi/all?language=${lang}`,
             {
               next: { revalidate: 60 }, // Cache for 60 seconds at fetch level
             },
