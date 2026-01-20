@@ -16,6 +16,23 @@ const config = {
     ],
   },
 
+  async headers() {
+    return [
+      {
+        // Apply to all routes
+        source: "/:path*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: "frame-ancestors *;", // Allow embedding in iframes from any origin
+            // To restrict to specific domains, use:
+            // value: "frame-ancestors https://your-domain.com https://another-domain.com;",
+          },
+        ],
+      },
+    ];
+  },
+
   async rewrites() {
     return [
       {
