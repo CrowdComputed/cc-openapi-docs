@@ -206,12 +206,12 @@ export default function PlaygroundClient({
     | "body";
   // Use same default values on server and client to avoid hydration errors
   const [panelStates, setPanelStates] = useState<Record<PanelId, boolean>>({
-    authorization: false,
-    header: false,
-    cookie: false,
-    query: false,
-    path: false,
-    body: false,
+    authorization: true,
+    header: true,
+    cookie: true,
+    query: true,
+    path: true,
+    body: true,
   });
 
   // Restore panel state from localStorage after client mount
@@ -227,12 +227,12 @@ export default function PlaygroundClient({
         const parsed = JSON.parse(stored);
         if (parsed && typeof parsed === "object") {
           setPanelStates({
-            authorization: parsed.authorization ?? false,
-            header: parsed.header ?? false,
-            cookie: parsed.cookie ?? false,
-            query: parsed.query ?? false,
-            path: parsed.path ?? false,
-            body: parsed.body ?? false,
+            authorization: parsed.authorization ?? true,
+            header: parsed.header ?? true,
+            cookie: parsed.cookie ?? true,
+            query: parsed.query ?? true,
+            path: parsed.path ?? true,
+            body: parsed.body ?? true,
           });
         }
       }
