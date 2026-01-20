@@ -9,7 +9,7 @@ export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
 
-export async function middleware(request: NextRequest, event: NextFetchEvent) {
+export async function proxy(request: NextRequest, event: NextFetchEvent) {
   let response = await i18nMiddleware(request, event);
 
   if (!response) {
