@@ -12,6 +12,9 @@ import { getPageImage, source } from "@/lib/source";
 import { getMDXComponents } from "@/mdx-components";
 import { createAPIPage } from "@/openapi/ui/api-page";
 
+// Revalidate every 60 seconds to keep OpenAPI data fresh
+export const revalidate = 60;
+
 export default async function Page(props: PageProps<"/[locale]/[[...slug]]">) {
   const params = await props.params;
   const page = source.getPage(params.slug, params.locale);

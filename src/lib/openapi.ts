@@ -8,6 +8,7 @@ type SchemaMap = Record<
 >;
 
 export const openapi = createOpenAPI({
+  disableCache: false, // Enable caching with 60s revalidation
   async input(): Promise<SchemaMap> {
     // Get all supported languages
     const languages = i18n.languages;
@@ -17,6 +18,9 @@ export const openapi = createOpenAPI({
       languages.map(async (lang) => {
         const jsonDoc = await fetch(
           `https://api.crowdcomputed.cc/api/workflow/openapi/all?language=${lang}`,
+          {
+            next: { revalidate: 60 }, // Cache for 60 seconds
+          },
         ).then((res) => res.json());
 
         return { lang, doc: jsonDoc };
