@@ -1,10 +1,9 @@
 import { DocsLayout } from "fumadocs-ui/layouts/docs";
 import type { ReactNode } from "react";
 import { baseOptions } from "@/lib/layout.shared";
-import { source } from "@/lib/source";
+import { createSource } from "@/lib/source";
 
-// Revalidate every 60 seconds to keep sidebar navigation fresh
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function Layout({
   children,
@@ -14,6 +13,8 @@ export default async function Layout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  // Create fresh source with latest OpenAPI data on each request
+  const source = await createSource();
   const tree = source.getPageTree(locale);
   return (
     <DocsLayout

@@ -1,6 +1,6 @@
 import { RootProvider } from "fumadocs-ui/provider/next";
 import "./global.css";
-import { defineI18nUI, type Translations } from "fumadocs-ui/i18n";
+import { defineI18nUI } from "fumadocs-ui/i18n";
 import { Inter } from "next/font/google";
 import type { ReactNode } from "react";
 import { i18n } from "@/lib/i18n";
