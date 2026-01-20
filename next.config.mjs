@@ -21,11 +21,9 @@ const config = {
       {
         source: "/(.*)",
         headers: [
-          // 仅允许特定可信网站嵌入
           {
             key: "Content-Security-Policy",
-            value:
-              "frame-ancestors 'self' https://crowdcomputed.cc https://crowdcomputed.com http://localhost:3000;",
+            value: "frame-ancestors *;",
           },
         ],
       },
