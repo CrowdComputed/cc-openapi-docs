@@ -507,13 +507,13 @@ export default function PlaygroundClient({
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const tokenFromUrl = searchParams.get("token");
-    if (tokenFromUrl) {
+    const token = searchParams.get("token");
+    if (token) {
       // Set token in Authorization header
-      const authField = "Authorization";
+      const authField = "token";
 
       // URL token has priority, override existing value
-      form.setValue(`header.${authField}`, `Bearer ${tokenFromUrl}`, {
+      form.setValue(`header.${authField}`, token, {
         shouldDirty: false,
       });
     }
@@ -527,9 +527,11 @@ export default function PlaygroundClient({
       header.Authorization || header.authorization || header.AUTHORIZATION;
 
     if (token && typeof token === "string" && token.trim().length > 0) {
+      console.log("token", token);
       return true;
     }
     if (auth && typeof auth === "string" && auth.trim().length > 0) {
+      console.log("auth", auth);
       return true;
     }
 
@@ -541,6 +543,7 @@ export default function PlaygroundClient({
       typeof token.value === "string" &&
       token.value.trim().length > 0
     ) {
+      console.log("token object", token);
       return true;
     }
     if (
@@ -550,6 +553,7 @@ export default function PlaygroundClient({
       typeof auth.value === "string" &&
       auth.value.trim().length > 0
     ) {
+      console.log("auth object", auth);
       return true;
     }
 
