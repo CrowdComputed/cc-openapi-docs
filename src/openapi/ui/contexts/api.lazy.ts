@@ -1,6 +1,6 @@
-'use client';
-import { wrapLazy } from '../../utils/lazy';
+"use client";
+import { wrapLazy } from "../../utils/lazy";
 
 export const ApiProviderLazy = wrapLazy(() =>
-  import('./api').then((mod) => ({ default: mod.ApiProvider })),
+  import("./api").then((mod) => ({ default: mod.ApiProvider })),
 );

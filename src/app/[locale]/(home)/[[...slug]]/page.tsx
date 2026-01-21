@@ -7,6 +7,7 @@ import {
 import { createRelativeLink } from "fumadocs-ui/mdx";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import client from "@/components/api-page.client";
 import { ShareLinkButton } from "@/components/share-link-button";
 import { openapi } from "@/lib/openapi";
 import { getPageImage, source } from "@/lib/source";
@@ -26,7 +27,12 @@ export default async function Page(props: PageProps<"/[locale]/[[...slug]]">) {
     "getAPIPageProps" in page.data &&
     typeof page.data.getAPIPageProps === "function"
   ) {
-    const APIPage = createAPIPage(openapi);
+    const APIPage = createAPIPage(openapi, {
+      client,
+      playground: {
+        enabled: true,
+      },
+    });
     const apiProps = page.data.getAPIPageProps();
     const schema = page.data.getSchema();
 

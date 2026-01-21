@@ -275,6 +275,8 @@ export function ResultDisplayExtended({
     return urlStartIndex;
   };
 
+  console.log(allMediaUrls);
+
   const hasMediaToPreview = allMediaUrls.length > 0;
 
   return (

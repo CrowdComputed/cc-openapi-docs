@@ -33,7 +33,7 @@ export function getStatusInfo(status: number): StatusInfo {
 
   if (status >= 200 && status < 300) {
     return {
-      description: "Http Status",
+      description: "HTTP Status",
       color: "text-green-500",
       icon: CircleCheck,
     };
