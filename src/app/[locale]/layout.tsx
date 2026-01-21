@@ -3,6 +3,7 @@ import "./global.css";
 import { defineI18nUI } from "fumadocs-ui/i18n";
 import { Inter } from "next/font/google";
 import type { ReactNode } from "react";
+import { UrlSync } from "@/components/url-sync";
 import { i18n } from "@/lib/i18n";
 
 const inter = Inter({
@@ -33,6 +34,7 @@ export default async function Layout({
             enabled: false,
           }}
         >
+          <UrlSync />
           {children}
         </RootProvider>
       </body>
