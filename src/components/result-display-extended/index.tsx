@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
+import { cn } from "@/lib/utils";
 import type { FormValues } from "@/openapi/playground/client";
 import type { FetchResult } from "@/openapi/playground/fetcher";
 import { useStorageKey } from "@/openapi/ui/client/storage-key";
@@ -307,7 +308,12 @@ export function ResultDisplayExtended({
       )}
 
       {/* Log list */}
-      <div className="mb-4 space-y-2">
+      <div
+        className={cn(
+          "mb-4 space-y-2",
+          currentData?.data.websocket ? "block" : "hidden",
+        )}
+      >
         <div className="flex items-center justify-between">
           <h3 ref={wsMessagesCountRef} className="text-sm font-semibold">
             Logs (0)
