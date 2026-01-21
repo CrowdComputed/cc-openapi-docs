@@ -62,6 +62,7 @@ jobs:
           cat > .env << EOF
           NEXT_PUBLIC_API_URL=https://api.crowdcomputed.com
           NEXT_PUBLIC_LOGIN_URL=https://crowdcomputed.com/login/
+          NEXT_PUBLIC_WEB_URL=https://crowdcomputed.com
           EOF
 
       - name: Build Next.js (standalone)

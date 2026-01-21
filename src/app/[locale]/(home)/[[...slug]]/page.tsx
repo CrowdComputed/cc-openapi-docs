@@ -7,6 +7,7 @@ import {
 import { createRelativeLink } from "fumadocs-ui/mdx";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { ShareLinkButton } from "@/components/share-link-button";
 import { openapi } from "@/lib/openapi";
 import { getPageImage, source } from "@/lib/source";
 import { getMDXComponents } from "@/mdx-components";
@@ -37,7 +38,13 @@ export default async function Page(props: PageProps<"/[locale]/[[...slug]]">) {
         }}
         full
       >
-        <DocsTitle>{page.data.title}</DocsTitle>
+        <div className="flex items-center gap-3 mb-4">
+          <DocsTitle className="mb-0 flex-1">{page.data.title}</DocsTitle>
+          <ShareLinkButton
+            locale={params.locale}
+            slug={params.slug?.join("/")}
+          />
+        </div>
         <DocsDescription className="mb-0">
           {page.data.description}
         </DocsDescription>
@@ -66,7 +73,10 @@ export default async function Page(props: PageProps<"/[locale]/[[...slug]]">) {
           }}
           full={full}
         >
-          <DocsTitle>{page.data.title}</DocsTitle>
+          <div className="flex items-center gap-3 mb-4">
+            <DocsTitle className="mb-0 flex-1">{page.data.title}</DocsTitle>
+            <ShareLinkButton locale={params.locale} />
+          </div>
           <DocsDescription className="mb-0">
             {page.data.description}
           </DocsDescription>
@@ -85,7 +95,10 @@ export default async function Page(props: PageProps<"/[locale]/[[...slug]]">) {
         }}
         full={full}
       >
-        <DocsTitle>{page.data.title}</DocsTitle>
+        <div className="flex items-center gap-3 mb-4">
+          <DocsTitle className="mb-0 flex-1">{page.data.title}</DocsTitle>
+          <ShareLinkButton locale={params.locale} />
+        </div>
         <DocsDescription className="mb-0">
           {page.data.description}
         </DocsDescription>
@@ -114,7 +127,10 @@ export default async function Page(props: PageProps<"/[locale]/[[...slug]]">) {
       }}
       full={full}
     >
-      <DocsTitle>{page.data.title}</DocsTitle>
+      <div className="flex items-center gap-3 mb-4">
+        <DocsTitle className="mb-0 flex-1">{page.data.title}</DocsTitle>
+        <ShareLinkButton locale={params.locale} />
+      </div>
       <DocsDescription className="mb-0">
         {page.data.description}
       </DocsDescription>
