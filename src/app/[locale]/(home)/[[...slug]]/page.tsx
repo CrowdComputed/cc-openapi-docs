@@ -42,7 +42,7 @@ export default async function Page(props: PageProps<"/[locale]/[[...slug]]">) {
           {page.data.description}
         </DocsDescription>
         <DocsBody>
-          <APIPage {...apiProps} document={schema.id} />
+          <APIPage {...apiProps} document={schema.id} showDescription={false} />
         </DocsBody>
       </DocsPage>
     );
