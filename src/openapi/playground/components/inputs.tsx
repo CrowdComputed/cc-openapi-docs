@@ -5,6 +5,7 @@ import {
   type ComponentProps,
   type HTMLAttributes,
   type ReactNode,
+  useMemo,
   useState,
 } from "react";
 import { useController, useFieldArray, useFormContext } from "react-hook-form";
@@ -75,12 +76,35 @@ export function ObjectInput({
 } & ComponentProps<"div">) {
   const field = useResolvedSchema(_field);
 
+  // Sort properties by index if available
+  const sortedProperties = useMemo(() => {
+    const entries = Object.entries(field.properties ?? {});
+    return entries.sort(([keyA, propA], [keyB, propB]) => {
+      // Check for index field in schema (could be direct property or x-index extension)
+      const indexA =
+        (propA as ParsedSchema & { index?: number; "x-index"?: number })
+          ?.index ??
+        (propA as ParsedSchema & { index?: number; "x-index"?: number })?.[
+          "x-index"
+        ] ??
+        Infinity;
+      const indexB =
+        (propB as ParsedSchema & { index?: number; "x-index"?: number })
+          ?.index ??
+        (propB as ParsedSchema & { index?: number; "x-index"?: number })?.[
+          "x-index"
+        ] ??
+        Infinity;
+      return indexA - indexB;
+    });
+  }, [field.properties]);
+
   return (
     <div
       {...props}
       className={cn("grid grid-cols-1 gap-4 @md:grid-cols-2", props.className)}
     >
-      {Object.entries(field.properties ?? {}).map(([key, child]) => (
+      {sortedProperties.map(([key, child]) => (
         <FieldSet
           key={key}
           name={key}
