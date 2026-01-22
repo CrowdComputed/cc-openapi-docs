@@ -101,6 +101,10 @@ export interface PlaygroundClientProps
    */
   references: Record<string, ParsedSchema>;
   proxyUrl?: string;
+  /**
+   * Default example response from 200 status code
+   */
+  defaultExampleResponse?: unknown;
 }
 
 export interface PlaygroundClientOptions {
@@ -172,6 +176,7 @@ export default function PlaygroundClient({
   proxyUrl,
   writeOnly,
   readOnly,
+  defaultExampleResponse,
   ...rest
 }: PlaygroundClientProps) {
   const searchParams = useSearchParams();
@@ -374,7 +379,12 @@ export default function PlaygroundClient({
     );
   });
 
-  // Restore response data from localStorage after client mount
+  // Track if the current result is from example (not from actual API call)
+  const [isExampleResult, setIsExampleResult] = useState(false);
+  // Track if we've sent a real API request (to distinguish from initial example)
+  const [hasSentRealRequest, setHasSentRealRequest] = useState(false);
+
+  // Restore response data from localStorage after client mount, or use default example
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
@@ -399,12 +409,41 @@ export default function PlaygroundClient({
           "data" in parsed
         ) {
           testQuery.setData(parsed as FetchResult);
+          setIsExampleResult(false); // Cached data is from actual API call
+          setHasSentRealRequest(true); // Cached data means we've sent a real request before
+          return;
         }
       }
     } catch {
       // If parsing fails, ignore
     }
-  }, [route, method, storageKeys, testQuery.data, testQuery.setData]);
+
+    // If no cached data and defaultExampleResponse is available, use it
+    if (defaultExampleResponse !== undefined) {
+      testQuery.setData({
+        status: 200,
+        type: "json",
+        data: defaultExampleResponse,
+      } as FetchResult);
+      setIsExampleResult(true);
+      setHasSentRealRequest(false); // This is just an example, not a real request
+    }
+  }, [
+    route,
+    method,
+    storageKeys,
+    testQuery.data,
+    testQuery.setData,
+    defaultExampleResponse,
+  ]);
+
+  // When a real API request completes (isLoading changes from true to false), mark it as real result
+  useEffect(() => {
+    // If loading just finished and we have data, and we've sent a real request, it's a real result
+    if (!testQuery.isLoading && testQuery.data && hasSentRealRequest) {
+      setIsExampleResult(false);
+    }
+  }, [testQuery.isLoading, testQuery.data, hasSentRealRequest]);
 
   const onUpdateDebounced = useEffectEvent((values: FormValues) => {
     // Only save to localStorage in client environment
@@ -599,6 +638,9 @@ export default function PlaygroundClient({
       return;
     }
 
+    // Mark that we're starting a real API call
+    setHasSentRealRequest(true);
+    // isExampleResult will be set to false when the real response comes back (in useEffect)
     testQuery.start(mapInputs(value));
   });
 
@@ -663,6 +705,8 @@ export default function PlaygroundClient({
                 data={testQuery.data}
                 reset={() => {
                   testQuery.reset();
+                  setIsExampleResult(false);
+                  setHasSentRealRequest(false);
                   // Clear response data from localStorage
                   if (typeof window !== "undefined") {
                     try {
@@ -674,7 +718,7 @@ export default function PlaygroundClient({
                   }
                 }}
               />
-              {ResultDisplayExtended && (
+              {ResultDisplayExtended && !isExampleResult && (
                 <ResultDisplayExtended
                   data={testQuery.data}
                   route={route}

@@ -55,6 +55,11 @@ export function ResponseTabs({
   const tabs: ResponseTab[] = [];
 
   for (const [code, response] of Object.entries(operation.responses)) {
+    // Skip 200 status code entirely (it will be shown in playground result instead)
+    if (code === "200") {
+      continue;
+    }
+
     const media = response.content ? getPreferredType(response.content) : null;
     const responseOfType = media ? response.content?.[media] : null;
 

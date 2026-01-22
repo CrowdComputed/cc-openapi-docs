@@ -51,6 +51,30 @@ export async function APIPlayground({ path, method, ctx }: APIPlaygroundProps) {
     registered: new WeakMap(),
   };
 
+  // Get 200 response example if available
+  let defaultExampleResponse: unknown | undefined;
+  const response200 = method.responses?.["200"];
+  if (response200) {
+    const media = response200.content
+      ? getPreferredType(response200.content)
+      : null;
+    const responseOfType = media ? response200.content?.[media] : null;
+
+    if (responseOfType?.examples) {
+      // Use first example if available
+      const firstExample = Object.values(responseOfType.examples)[0];
+      if (firstExample?.value !== undefined) {
+        defaultExampleResponse = firstExample.value;
+      }
+    } else if (responseOfType?.example !== undefined) {
+      defaultExampleResponse = responseOfType.example;
+    } else if (responseOfType?.schema) {
+      // Generate sample from schema
+      const { sample } = await import("openapi-sampler");
+      defaultExampleResponse = sample(responseOfType.schema as object);
+    }
+  }
+
   const props: PlaygroundClientProps = {
     securities: parseSecurities(method, ctx),
     method: method.method,
@@ -70,6 +94,7 @@ export async function APIPlayground({ path, method, ctx }: APIPlaygroundProps) {
     proxyUrl: ctx.proxyUrl,
     writeOnly: true,
     readOnly: false,
+    defaultExampleResponse,
   };
 
   return <ClientLazy {...props} />;
