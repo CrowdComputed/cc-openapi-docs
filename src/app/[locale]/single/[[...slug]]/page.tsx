@@ -9,7 +9,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import client from "@/components/api-page.client";
 import { openapi } from "@/lib/openapi";
-import { getPageImage, source } from "@/lib/source";
+import { createSource, getPageImage } from "@/lib/source";
 import { getMDXComponents } from "@/mdx-components";
 import { createAPIPage } from "@/openapi/ui/api-page";
 
@@ -18,6 +18,7 @@ export const revalidate = 60;
 
 export default async function Page(props: PageProps<"/[locale]/[[...slug]]">) {
   const params = await props.params;
+  const source = await createSource();
   const page = source.getPage(params.slug, params.locale);
   if (!page) notFound();
 
@@ -131,14 +132,16 @@ export default async function Page(props: PageProps<"/[locale]/[[...slug]]">) {
   );
 }
 
-export async function generateStaticParams() {
-  return source.generateParams();
-}
+// export async function generateStaticParams() {
+//   const source = await createSource();
+//   return source.generateParams();
+// }
 
 export async function generateMetadata(
   props: PageProps<"/[locale]/[[...slug]]">,
 ): Promise<Metadata> {
   const params = await props.params;
+  const source = await createSource();
   const page = source.getPage(params.slug, params.locale);
   if (!page) notFound();
 
