@@ -91,7 +91,7 @@ jobs:
             type=raw,value=latest
             type=raw,value=stable
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image (multi-arch: amd64 + arm64 for Apple Silicon)
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -99,7 +99,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
 
       - name: Deploy to Node
         uses: CrowdComputed/ssh-action@master
