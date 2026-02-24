@@ -42,7 +42,7 @@ docker run -p 3000:3000 -e NEXT_PUBLIC_API_URL=https://your-api.example.com crow
 
 To modify the docs or run from source:
 
-**Prerequisites:** [Node.js](https://nodejs.org/) 20+, [pnpm](https://pnpm.io/) 9+
+**Prerequisites:** [Node.js](https://nodejs.org/) 20+, [pnpm](https://pnpm.io/) 9+, [bun](https://bun.com/docs) v1.3.9+
 
 1. **Clone and install**
 
