@@ -54,7 +54,7 @@ pnpm install
 
 2. **Environment**
 
-Create a `.env.local` (or use existing `.env`) and set the API base URL:
+Use existing `.env.local` and set the API base URL:
 
 ```bash
 # Required: base URL of the CrowdComputed API (used for OpenAPI and playground)
