@@ -6,6 +6,13 @@ import type { ReactNode } from "react";
 import { UrlSync } from "@/components/url-sync";
 import { i18n } from "@/lib/i18n";
 
+// 用于解析 OG/Twitter 等社交图片的绝对 URL，避免 metadataBase 未设置警告
+export const metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_WEB_URL ?? "http://localhost:3000",
+  ),
+};
+
 const inter = Inter({
   subsets: ["latin"],
 });

@@ -1,7 +1,7 @@
 "use client";
+import { buttonVariants } from "fumadocs-ui/components/ui/button";
 import Image from "next/image";
 import { cn } from "@/lib/cn";
-import { buttonVariants } from "fumadocs-ui/components/ui/button";
 import { getMediaType } from "./utils";
 
 interface MediaPreviewProps {
