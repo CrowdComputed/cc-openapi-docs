@@ -1,6 +1,5 @@
 "use client";
 import { buttonVariants } from "fumadocs-ui/components/ui/button";
-import Image from "next/image";
 import { cn } from "@/lib/cn";
 import { getMediaType } from "./utils";
 
@@ -18,7 +17,7 @@ export function MediaPreview({ url, previewIndex }: MediaPreviewProps) {
   switch (mediaType) {
     case "image":
       return (
-        <Image
+        <img
           src={url}
           alt={`Preview ${previewIndex + 1}`}
           width={1200}
